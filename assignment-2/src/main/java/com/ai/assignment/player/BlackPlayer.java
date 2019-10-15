@@ -4,6 +4,7 @@ package com.ai.assignment.player;
 import com.ai.assignment.entities.Camp;
 import com.ai.assignment.entities.Move;
 import com.ai.assignment.entities.MoveType;
+import com.ai.assignment.entities.PlayerType;
 import com.ai.assignment.entities.board.Cell;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
  * @project ai-assignments
  */
 public class BlackPlayer extends Player {
+
     @Override
     public ArrayList<Move> getAvailableMoves(Cell cell) {
         if (isInOpposingCamp(cell)) {
@@ -24,29 +26,14 @@ public class BlackPlayer extends Player {
 
         ArrayList<Move> availableMoves = new ArrayList<>();
 
-        //Note : A cell is null when its not on board. An available cell is not identified by null, rather by
-        // playertype None
-
-
-        /*
-        a) Players cannot make a move that starts outside their own camp and causes one of their
-        pieces to end up in their own camp.
-        b) If a player has at least one piece left in their own camp, they have to
-        • Move a piece out of their camp (i.e. at the end of the whole move the piece ends up
-        outside of their camp).
-        • If that’s not possible, move a piece in their camp further away from the corner of their
-        own camp ([0,0] or [15,15] respectively).
-         */
-
-
         if (isInCamp(cell)) {
-            if (isNotNull(cell.getRight())) {
+            if (isNotNull(cell.getRight()) && cell.getRight().getPlayerType() == PlayerType.NONE) {
                 addMove(MoveType.EMPTY, cell.getRight(), availableMoves);
             }
-            if (isNotNull(cell.getBottom())) {
+            if (isNotNull(cell.getBottom()) && cell.getBottom().getPlayerType() == PlayerType.NONE) {
                 addMove(MoveType.EMPTY, cell.getBottom(), availableMoves);
             }
-            if (isNotNull(cell.getBottomRight())) {
+            if (isNotNull(cell.getBottomRight()) && cell.getBottomRight().getPlayerType() == PlayerType.NONE) {
                 addMove(MoveType.EMPTY, cell.getBottomRight(), availableMoves);
             }
             for (Move move : getJumpMoves(cell)) {
@@ -62,28 +49,28 @@ public class BlackPlayer extends Player {
                 }
             }
         } else {
-            if (isMoveValid(cell.getLeft())) {
+            if (isValidMove(cell.getLeft())) {
                 addMove(MoveType.EMPTY, cell.getLeft(), availableMoves);
             }
-            if (isMoveValid(cell.getRight())) {
+            if (isValidMove(cell.getRight())) {
                 addMove(MoveType.EMPTY, cell.getRight(), availableMoves);
             }
-            if (isMoveValid(cell.getTop())) {
+            if (isValidMove(cell.getTop())) {
                 addMove(MoveType.EMPTY, cell.getTop(), availableMoves);
             }
-            if (isMoveValid(cell.getBottom())) {
+            if (isValidMove(cell.getBottom())) {
                 addMove(MoveType.EMPTY, cell.getBottom(), availableMoves);
             }
-            if (isMoveValid(cell.getTopLeft())) {
+            if (isValidMove(cell.getTopLeft())) {
                 addMove(MoveType.EMPTY, cell.getTopLeft(), availableMoves);
             }
-            if (isMoveValid(cell.getTopRight())) {
+            if (isValidMove(cell.getTopRight())) {
                 addMove(MoveType.EMPTY, cell.getTopRight(), availableMoves);
             }
-            if (isMoveValid(cell.getBottomLeft())) {
+            if (isValidMove(cell.getBottomLeft())) {
                 addMove(MoveType.EMPTY, cell.getBottomLeft(), availableMoves);
             }
-            if (isMoveValid(cell.getBottomRight())) {
+            if (isValidMove(cell.getBottomRight())) {
                 addMove(MoveType.EMPTY, cell.getBottomRight(), availableMoves);
             }
             availableMoves.addAll(getJumpMoves(cell));

@@ -1,6 +1,7 @@
 package com.ai.assignment.entities.board;
 
 
+import com.ai.assignment.entities.Camp;
 import com.ai.assignment.entities.PlayerType;
 
 
@@ -47,8 +48,38 @@ public class Cell {
     }
 
 
-    public int getDistance() {
-        return this.distance;
+    public int getDistance(final PlayerType playerType) {
+        int distance = 100000000; //setting to very high value
+        switch (playerType) {
+            case BLACK:
+                if (Camp.whiteCamp.contains(this.getRow() + "," + this.getCol())) {
+                    return 0;
+                }
+                for (String coord : Camp.whiteCamp) {
+                    final int cellRow = Integer.parseInt(coord.split(",")[0]);
+                    final int cellCol = Integer.parseInt(coord.split(",")[1]);
+                    final int manhattenDist = Math.abs(this.getRow() - cellRow + this.getCol() - cellCol);
+                    if (manhattenDist < distance) {
+                        distance = manhattenDist;
+                    }
+                }
+                return distance;
+            case WHITE:
+                if (Camp.blackCamp.contains(this.getRow() + "," + this.getCol())) {
+                    return 0;
+                }
+                for (String coord : Camp.blackCamp) {
+                    final int cellRow = Integer.parseInt(coord.split(",")[0]);
+                    final int cellCol = Integer.parseInt(coord.split(",")[1]);
+                    final int manhattenDist = Math.abs(this.getRow() - cellRow + this.getCol() - cellCol);
+                    if (manhattenDist < distance) {
+                        distance = manhattenDist;
+                    }
+                }
+                return distance;
+            default:
+                return 0;
+        }
     }
 
 
