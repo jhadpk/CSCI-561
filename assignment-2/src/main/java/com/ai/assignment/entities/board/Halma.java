@@ -5,8 +5,6 @@ import com.ai.assignment.entities.PlayerType;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static com.ai.assignment.entities.PlayerType.getPlayerType;
-
 
 /**
  * @author deepakjha on 10/14/19
@@ -24,7 +22,8 @@ public class Halma {
         for (int row = 0; row < boardInput.size(); row++) {
             final ArrayList<Cell> boardRow = new ArrayList<>();
             for (int col = 0; col < boardInput.get(row).size(); col++) {
-                Cell cell = new Cell(row, col, getPlayerType(boardInput.get(row).get(col)));
+                Cell cell = new Cell(row, col);
+                cell.setPlayerType(PlayerType.getPlayerType(boardInput.get(row).get(col)));
                 boardRow.add(cell);
                 coordinatesCellMap.put(new Coordinates(row, col), cell);
             }

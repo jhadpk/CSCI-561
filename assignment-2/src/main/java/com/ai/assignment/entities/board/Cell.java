@@ -16,10 +16,9 @@ public class Cell {
     private int distance;
 
 
-    public Cell(final int row, final int col, final PlayerType playerType) {
+    public Cell(final int row, final int col) {
         this.row = row;
         this.col = col;
-        this.playerType = playerType;
     }
 
 
@@ -30,6 +29,11 @@ public class Cell {
 
     public int getCol() {
         return this.col;
+    }
+
+
+    public void setPlayerType(final PlayerType playerType) {
+        this.playerType = playerType;
     }
 
 

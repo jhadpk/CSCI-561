@@ -29,6 +29,12 @@ public class WhitePlayer extends Player {
 
 
     @Override
+    public boolean isInOpposingCamp(Cell cell) {
+        return false;
+    }
+
+
+    @Override
     public void addMove(MoveType moveType, Cell cell, ArrayList<Move> availableMoves) {
 
     }

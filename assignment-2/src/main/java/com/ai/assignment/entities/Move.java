@@ -18,4 +18,13 @@ public class Move {
         this.moveType = moveType;
         this.cells = cells;
     }
+
+    public MoveType getMove() {
+        return this.moveType;
+    }
+
+    public List<Cell> getCells() {
+        return this.cells;
+    }
+
 }
