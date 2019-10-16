@@ -1,6 +1,7 @@
 package com.ai.assignment.entities;
 
 import com.ai.assignment.entities.board.Cell;
+import com.ai.assignment.entities.enums.MoveType;
 
 import java.util.List;
 

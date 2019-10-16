@@ -1,5 +1,6 @@
-package com.ai.assignment.player;
+package com.ai.assignment;
 
+import com.ai.assignment.api.game.players.BlackPlayer;
 import com.ai.assignment.entities.Jump;
 import com.ai.assignment.entities.board.Cell;
 import com.ai.assignment.entities.board.Coordinates;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
  * @project ai-assignments
  */
 public class psvm {
+
 
     public static void main(String[] args) {
         ArrayList<ArrayList<String>> boardInput = new ArrayList<>();

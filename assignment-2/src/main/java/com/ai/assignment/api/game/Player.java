@@ -1,10 +1,10 @@
-package com.ai.assignment.player;
+package com.ai.assignment.api.game;
 
 
 import com.ai.assignment.entities.Jump;
 import com.ai.assignment.entities.Move;
-import com.ai.assignment.entities.MoveType;
-import com.ai.assignment.entities.PlayerType;
+import com.ai.assignment.entities.enums.MoveType;
+import com.ai.assignment.entities.enums.PlayerType;
 import com.ai.assignment.entities.board.Cell;
 
 import java.util.ArrayList;
@@ -18,32 +18,9 @@ import java.util.List;
  */
 
 
-public abstract class Player {
+public abstract class Player implements Game {
     protected Cell BLACK_CORNER_CELL = new Cell(0, 0);
     protected Cell WHITE_CORNER_CELL = new Cell(15, 15);
-
-
-    /***
-     * Note : A cell is null when its not on board. An available cell is not identified by null, rather by
-     * playertype None
-     *
-     *
-     *a) Players cannot make a move that starts outside their own camp and causes one of their
-     *pieces to end up in their own camp.
-     *b) If a player has at least one piece left in their own camp, they have to
-     *  • Move a piece out of their camp (i.e. at the end of the whole move the piece ends up
-     *    outside of their camp).
-     *  • If that’s not possible, move a piece in their camp further away from the corner of their
-     *    own camp ([0,0] or [15,15] respectively).
-     * @param cell get available moves for this cell
-     * @return list of moves
-     */
-    public abstract ArrayList<Move> getAvailableMoves(Cell cell);
-
-    public abstract boolean isInCamp(Cell cell);
-
-    public abstract boolean isInOpposingCamp(Cell cell);
-
 
     public void addMove(MoveType moveType, Cell cell, ArrayList<Move> availableMoves) {
         availableMoves.add(getMove(moveType, Collections.singletonList(cell)));

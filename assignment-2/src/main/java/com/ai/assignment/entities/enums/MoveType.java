@@ -1,4 +1,4 @@
-package com.ai.assignment.entities;
+package com.ai.assignment.entities.enums;
 
 /**
  * @author deepakjha on 10/13/19
@@ -8,7 +8,7 @@ public enum MoveType {
     JUMP("J"),
     EMPTY("E");
 
-    private final String move;
+    public final String move;
 
     MoveType(String move) {
         this.move = move;

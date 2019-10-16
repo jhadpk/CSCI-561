@@ -2,7 +2,7 @@ package com.ai.assignment.entities.board;
 
 
 import com.ai.assignment.entities.Camp;
-import com.ai.assignment.entities.PlayerType;
+import com.ai.assignment.entities.enums.PlayerType;
 
 
 /**

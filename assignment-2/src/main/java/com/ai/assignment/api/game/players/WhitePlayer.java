@@ -1,10 +1,12 @@
-package com.ai.assignment.player;
+package com.ai.assignment.api.game.players;
 
 
+import com.ai.assignment.api.game.Player;
 import com.ai.assignment.entities.Camp;
+import com.ai.assignment.entities.Input;
 import com.ai.assignment.entities.Move;
-import com.ai.assignment.entities.MoveType;
-import com.ai.assignment.entities.PlayerType;
+import com.ai.assignment.entities.enums.MoveType;
+import com.ai.assignment.entities.enums.PlayerType;
 import com.ai.assignment.entities.board.Cell;
 
 import java.util.ArrayList;
@@ -15,6 +17,13 @@ import java.util.ArrayList;
  * @project ai-assignments
  */
 public class WhitePlayer extends Player {
+
+    @Override
+    public ArrayList<Move> getNextMove(final Input input) {
+
+        return null;
+    }
+
 
     @Override
     public ArrayList<Move> getAvailableMoves(Cell cell) {

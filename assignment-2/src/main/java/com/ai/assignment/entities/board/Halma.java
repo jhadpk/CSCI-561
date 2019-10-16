@@ -1,6 +1,6 @@
 package com.ai.assignment.entities.board;
 
-import com.ai.assignment.entities.PlayerType;
+import com.ai.assignment.entities.enums.PlayerType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +13,6 @@ import java.util.HashMap;
 public class Halma {
     private ArrayList<ArrayList<Cell>> board;
     private PlayerType currentPlayer;
-
     private static HashMap<Coordinates, Cell> coordinatesCellMap;
 
     public Halma(ArrayList<ArrayList<String>> boardInput) {
@@ -23,7 +22,7 @@ public class Halma {
             final ArrayList<Cell> boardRow = new ArrayList<>();
             for (int col = 0; col < boardInput.get(row).size(); col++) {
                 Cell cell = new Cell(row, col);
-                cell.setPlayerType(PlayerType.getPlayerType(boardInput.get(row).get(col)));
+                cell.setPlayerType(PlayerType.getPlayerByValue(boardInput.get(row).get(col)));
                 boardRow.add(cell);
                 coordinatesCellMap.put(new Coordinates(row, col), cell);
             }
