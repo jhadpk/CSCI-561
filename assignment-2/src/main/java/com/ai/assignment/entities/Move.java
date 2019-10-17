@@ -31,7 +31,7 @@ public class Move {
         return this.playerType;
     }
 
-    public MoveType getMove() {
+    public MoveType getMoveType() {
         return this.moveType;
     }
 

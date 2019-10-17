@@ -13,4 +13,8 @@ public enum MoveType {
     MoveType(String move) {
         this.move = move;
     }
+
+    public String getMoveCode() {
+        return this.move;
+    }
 }
