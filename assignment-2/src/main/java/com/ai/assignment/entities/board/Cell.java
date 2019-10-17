@@ -48,16 +48,17 @@ public class Cell {
     }
 
 
-    public int getDistance(final PlayerType playerType) {
+    public int getDistance() {
         int distance = 100000000; //setting to very high value
-        switch (playerType) {
+        switch (this.playerType) {
             case BLACK:
                 if (Camp.whiteCamp.contains(this.getRow() + "," + this.getCol())) {
                     return 0;
                 }
                 for (String coord : Camp.whiteCamp) {
-                    final int cellRow = Integer.parseInt(coord.split(",")[0]);
-                    final int cellCol = Integer.parseInt(coord.split(",")[1]);
+                    String[] coordinates = coord.split(",");
+                    final int cellRow = Integer.parseInt(coordinates[0]);
+                    final int cellCol = Integer.parseInt(coordinates[1]);
                     final int manhattenDist = Math.abs(this.getRow() - cellRow + this.getCol() - cellCol);
                     if (manhattenDist < distance) {
                         distance = manhattenDist;

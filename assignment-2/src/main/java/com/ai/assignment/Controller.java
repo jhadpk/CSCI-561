@@ -50,6 +50,7 @@ public class Controller {
             input.setPlayerType(br.readLine());
             input.setTimeRemainingInSeconds(br.readLine());
             input.setHalma(getBoardConfig(br));
+            input.setBoard(input.getHalma().getBoard());
             return input;
         } catch (IOException e) {
             return null;
@@ -103,8 +104,8 @@ public class Controller {
             if (null != optimalMoves && optimalMoves.size() != 0) {
                 StringBuilder output = new StringBuilder();
                 for (Move move : optimalMoves) {
-                    if (null != move.getMove() && 0 != move.getCells().size()) {
-                        output.append(move.getMove().move).append(BLANK_SPACE).append(getMove(move.getCells())).append(
+                    if (null != move.getMove() && 0 != move.getPath().size()) {
+                        output.append(move.getMove().move).append(BLANK_SPACE).append(getMove(move.getPath())).append(
                                 NEW_LINE);
                     }
                 }

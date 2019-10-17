@@ -1,15 +1,23 @@
 package com.ai.assignment.api.game;
 
 
+import com.ai.assignment.entities.Camp;
 import com.ai.assignment.entities.Jump;
 import com.ai.assignment.entities.Move;
+import com.ai.assignment.entities.MoveToPlay;
+import com.ai.assignment.entities.board.Cell;
+import com.ai.assignment.entities.board.Coordinates;
 import com.ai.assignment.entities.enums.MoveType;
 import com.ai.assignment.entities.enums.PlayerType;
-import com.ai.assignment.entities.board.Cell;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static com.ai.assignment.entities.board.Halma.getCellByCoordinate;
+import static com.ai.assignment.entities.board.Halma.makeMove;
+import static com.ai.assignment.entities.board.Halma.undoMove;
 
 
 /**
@@ -21,14 +29,13 @@ import java.util.List;
 public abstract class Player implements Game {
     protected Cell BLACK_CORNER_CELL = new Cell(0, 0);
     protected Cell WHITE_CORNER_CELL = new Cell(15, 15);
+    protected int MAX = 1000;
+    protected int MIN = -1000;
 
-    public void addMove(MoveType moveType, Cell cell, ArrayList<Move> availableMoves) {
-        availableMoves.add(getMove(moveType, Collections.singletonList(cell)));
-    }
-
-
-    public Move getMove(MoveType moveType, List<Cell> cells) {
-        return new Move(moveType, cells);
+    public void addSingleMove(MoveType moveType, Cell startingCell, Cell destinationCell,
+            ArrayList<Move> availableMoves) {
+        availableMoves.add(getMove(startingCell.getPlayerType(), moveType, Arrays.asList(startingCell, destinationCell),
+                startingCell, destinationCell));
     }
 
 
@@ -37,10 +44,16 @@ public abstract class Player implements Game {
         ArrayList<Jump> jumps = new ArrayList<>();
         getJumps(cell, null, jumps);
         ArrayList<Move> jumpMoves = new ArrayList<>();
-        for (ArrayList<Cell> move : getJumpingPaths(getParentInfo(jumps, 16, 16), cell)) {
-            jumpMoves.add(new Move(MoveType.JUMP, move));
+        for (ArrayList<Cell> path : getJumpingPaths(getParentInfo(jumps, 16, 16), cell)) {
+            jumpMoves.add(getMove(cell.getPlayerType(), MoveType.JUMP, path, path.get(0), path.get(path.size() - 1)));
         }
         return jumpMoves;
+    }
+
+
+    public Move getMove(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell,
+            Cell destinationCell) {
+        return new Move(playerType, moveType, path, startingCell, destinationCell);
     }
 
 
@@ -155,13 +168,113 @@ public abstract class Player implements Game {
         return path;
     }
 
-
     public boolean isFarFromCorner(final Cell corner, final Cell startingCell, final Cell destinationCell) {
         //check only if start and destination is in camp
-        final int horizontalDistanceAtStart = Math.abs(startingCell.getCol() - corner.getCol());
-        final int verticalDistanceAtStart = Math.abs(startingCell.getRow() - corner.getRow());
-        final int horizontalDistanceAtEnd = Math.abs(destinationCell.getCol() - corner.getCol());
-        final int verticalDistanceAtEnd = Math.abs(destinationCell.getRow() - corner.getRow());
-        return horizontalDistanceAtEnd >= horizontalDistanceAtStart && verticalDistanceAtEnd >= verticalDistanceAtStart;
+        //horizontalDistanceAtEnd >= horizontalDistanceAtStart && verticalDistanceAtEnd >= verticalDistanceAtStart
+        return Math.abs(destinationCell.getCol() - corner.getCol()) >= Math.abs(startingCell.getCol() - corner.getCol())
+                && Math.abs(destinationCell.getRow() - corner.getRow()) >= Math.abs(
+                startingCell.getRow() - corner.getRow());
     }
+
+    public MoveToPlay executeMinMax(int depth, ArrayList<Move> moves, Move play, boolean maximizing, int alpha,
+            int beta) {
+        if (depth == 3 || isGameOver(play.getPlayerType())) {
+            if (null != play && null != play.getDestinationCell()) {
+                return new MoveToPlay(play);
+            } else {
+                return new MoveToPlay();
+            }
+        }
+
+        MoveToPlay returnMove = new MoveToPlay();
+        if (maximizing) {
+            int bestScore = MIN;
+            for (Move move : moves) {
+                makeMove(move);
+                returnMove = executeMinMax(depth + 1, getAvailableMoves(move.getDestinationCell()), move,
+                        false, alpha, beta);
+                undoMove(move);
+                bestScore = Math.max(bestScore, returnMove.heuristic);
+                alpha = Math.max(alpha, bestScore);
+                if (beta <= alpha) { break; }
+            }
+            return returnMove;
+        } else {
+            int bestScore = MAX;
+            for (Move move : moves) {
+                makeMove(move);
+                returnMove = executeMinMax(depth + 1, getAvailableMoves(move.getDestinationCell()), move, true,
+                        alpha, beta);
+                undoMove(move);
+                bestScore = Math.min(bestScore, returnMove.heuristic);
+                beta = Math.min(beta, bestScore);
+                if (beta <= alpha) { break; }
+            }
+            return returnMove;
+        }
+    }
+
+
+    private boolean isGameOver(final PlayerType playerType) {
+        switch (playerType) {
+            case BLACK:
+                return isWhiteCampOccupiedByBlack();
+            case WHITE:
+                return isBlackCampOccupiedByWhite();
+        }
+        return false;
+    }
+
+
+    private boolean isWhiteCampOccupiedByBlack() {
+        if (hasWhiteNotLeftCamp()) {
+            System.out.println("Can be start of game OR Opponent is spoiling,");
+            return false;
+        }
+        for (final String coord : Camp.whiteCamp) {
+            Cell cell = getCellByCoordinate(new Coordinates(coord));
+            if (cell.getPlayerType().equals(PlayerType.NONE)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    private boolean hasWhiteNotLeftCamp() {
+        for (final String coord : Camp.whiteCamp) {
+            Cell cell = getCellByCoordinate(new Coordinates(coord));
+            if (cell.getPlayerType().equals(PlayerType.NONE) || cell.getPlayerType().equals(PlayerType.BLACK)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    private boolean isBlackCampOccupiedByWhite() {
+        if (hasBlackNotLeftCamp()) {
+            System.out.println("Can be start of game OR Opponent is spoiling,");
+            return false;
+        }
+        for (final String coord : Camp.blackCamp) {
+            Cell cell = getCellByCoordinate(new Coordinates(coord));
+            if (cell.getPlayerType().equals(PlayerType.NONE)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    private boolean hasBlackNotLeftCamp() {
+        for (final String coord : Camp.blackCamp) {
+            Cell cell = getCellByCoordinate(new Coordinates(coord));
+            if (cell.getPlayerType().equals(PlayerType.NONE) || cell.getPlayerType().equals(PlayerType.WHITE)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

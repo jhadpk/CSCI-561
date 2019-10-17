@@ -2,6 +2,7 @@ package com.ai.assignment.entities;
 
 import com.ai.assignment.entities.board.Cell;
 import com.ai.assignment.entities.enums.MoveType;
+import com.ai.assignment.entities.enums.PlayerType;
 
 import java.util.List;
 
@@ -12,20 +13,37 @@ import java.util.List;
  */
 
 public class Move {
+    private PlayerType playerType;
     private MoveType moveType;
-    private List<Cell> cells;
+    private List<Cell> path;
+    private Cell startingCell;
+    private Cell destinationCell;
 
-    public Move(MoveType moveType, List<Cell> cells) {
+    public Move(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell, Cell destinationCell) {
+        this.playerType = playerType;
         this.moveType = moveType;
-        this.cells = cells;
+        this.path = path;
+        this.startingCell = startingCell;
+        this.destinationCell = destinationCell;
+    }
+
+    public PlayerType getPlayerType() {
+        return this.playerType;
     }
 
     public MoveType getMove() {
         return this.moveType;
     }
 
-    public List<Cell> getCells() {
-        return this.cells;
+    public List<Cell> getPath() {
+        return this.path;
     }
 
+    public Cell getStartingCell() {
+        return this.startingCell;
+    }
+
+    public Cell getDestinationCell() {
+        return this.destinationCell;
+    }
 }

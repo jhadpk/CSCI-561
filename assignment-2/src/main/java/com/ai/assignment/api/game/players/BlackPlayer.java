@@ -5,11 +5,15 @@ import com.ai.assignment.api.game.Player;
 import com.ai.assignment.entities.Camp;
 import com.ai.assignment.entities.Input;
 import com.ai.assignment.entities.Move;
+import com.ai.assignment.entities.MoveToPlay;
+import com.ai.assignment.entities.board.Cell;
 import com.ai.assignment.entities.enums.MoveType;
 import com.ai.assignment.entities.enums.PlayerType;
-import com.ai.assignment.entities.board.Cell;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+
+import static com.ai.assignment.entities.enums.PlayerType.BLACK;
 
 
 /**
@@ -19,9 +23,28 @@ import java.util.ArrayList;
 public class BlackPlayer extends Player {
 
     @Override
-    public ArrayList<Move> getNextMove(final Input input) {
+    public Move getNextMove(final Input input) {
+        ArrayList<Cell> blackPlayers = getPlayerPositions(input.getBoard());
+        ArrayList<MoveToPlay> allBestMoves = new ArrayList<>();
+        for (Cell cell : blackPlayers) {
+            allBestMoves.add(executeMinMax(0, getAvailableMoves(cell), null, true,0,0));
+        }
+        allBestMoves.sort(Comparator.comparing(MoveToPlay::getHeuristic).reversed());
+        return allBestMoves.get(0).getMove();
+    }
 
-        return null;
+
+    @Override
+    public ArrayList<Cell> getPlayerPositions(ArrayList<ArrayList<Cell>> board) {
+        ArrayList<Cell> blackPlayerPositions = new ArrayList<>();
+        for (ArrayList<Cell> row : board) {
+            for (Cell cell : row) {
+                if (cell.getPlayerType().equals(BLACK)) {
+                    blackPlayerPositions.add(cell);
+                }
+            }
+        }
+        return blackPlayerPositions;
     }
 
 
@@ -37,17 +60,17 @@ public class BlackPlayer extends Player {
 
         if (isInCamp(cell)) {
             if (isNotNull(cell.getRight()) && cell.getRight().getPlayerType() == PlayerType.NONE) {
-                addMove(MoveType.EMPTY, cell.getRight(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getRight(), availableMoves);
             }
             if (isNotNull(cell.getBottom()) && cell.getBottom().getPlayerType() == PlayerType.NONE) {
-                addMove(MoveType.EMPTY, cell.getBottom(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getBottom(), availableMoves);
             }
             if (isNotNull(cell.getBottomRight()) && cell.getBottomRight().getPlayerType() == PlayerType.NONE) {
-                addMove(MoveType.EMPTY, cell.getBottomRight(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getBottomRight(), availableMoves);
             }
             for (Move move : getJumpMoves(cell)) {
-                int numJumps = move.getCells().size();
-                Cell destinationCell = move.getCells().get(numJumps - 1);
+                int numJumps = move.getPath().size();
+                Cell destinationCell = move.getPath().get(numJumps - 1);
                 //if after jumping its still in camp, find if it moved farther away from corner
                 if (isInCamp(destinationCell)) {
                     if (isFarFromCorner(BLACK_CORNER_CELL, cell, destinationCell)) {
@@ -59,28 +82,28 @@ public class BlackPlayer extends Player {
             }
         } else {
             if (isValidMove(cell.getLeft())) {
-                addMove(MoveType.EMPTY, cell.getLeft(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getLeft(), availableMoves);
             }
             if (isValidMove(cell.getRight())) {
-                addMove(MoveType.EMPTY, cell.getRight(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getRight(), availableMoves);
             }
             if (isValidMove(cell.getTop())) {
-                addMove(MoveType.EMPTY, cell.getTop(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getTop(), availableMoves);
             }
             if (isValidMove(cell.getBottom())) {
-                addMove(MoveType.EMPTY, cell.getBottom(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getBottom(), availableMoves);
             }
             if (isValidMove(cell.getTopLeft())) {
-                addMove(MoveType.EMPTY, cell.getTopLeft(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getTopLeft(), availableMoves);
             }
             if (isValidMove(cell.getTopRight())) {
-                addMove(MoveType.EMPTY, cell.getTopRight(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getTopRight(), availableMoves);
             }
             if (isValidMove(cell.getBottomLeft())) {
-                addMove(MoveType.EMPTY, cell.getBottomLeft(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getBottomLeft(), availableMoves);
             }
             if (isValidMove(cell.getBottomRight())) {
-                addMove(MoveType.EMPTY, cell.getBottomRight(), availableMoves);
+                addSingleMove(MoveType.EMPTY, cell, cell.getBottomRight(), availableMoves);
             }
             availableMoves.addAll(getJumpMoves(cell));
         }

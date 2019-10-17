@@ -1,5 +1,6 @@
 package com.ai.assignment.entities.board;
 
+import com.ai.assignment.entities.Move;
 import com.ai.assignment.entities.enums.PlayerType;
 
 import java.util.ArrayList;
@@ -10,10 +11,12 @@ import java.util.HashMap;
  * @author deepakjha on 10/14/19
  * @project ai-assignments
  */
+
 public class Halma {
-    private ArrayList<ArrayList<Cell>> board;
     private PlayerType currentPlayer;
+    private static ArrayList<ArrayList<Cell>> board;
     private static HashMap<Coordinates, Cell> coordinatesCellMap;
+
 
     public Halma(ArrayList<ArrayList<String>> boardInput) {
         board = new ArrayList<>();
@@ -30,17 +33,21 @@ public class Halma {
         }
     }
 
+
     public ArrayList<ArrayList<Cell>> getBoard() {
-        return this.board;
+        return board;
     }
+
 
     public void setCurrentPlayer(final PlayerType playerType) {
         this.currentPlayer = playerType;
     }
 
+
     public PlayerType getCurrentPlayer() {
         return this.currentPlayer;
     }
+
 
     public static Cell getLeft(Coordinates coordinates) {
         int row = coordinates.getRow();
@@ -52,6 +59,7 @@ public class Halma {
         return null;
     }
 
+
     public static Cell getRight(Coordinates coordinates) {
         int row = coordinates.getRow();
         int col = coordinates.getCol();
@@ -61,6 +69,7 @@ public class Halma {
         }
         return null;
     }
+
 
     public static Cell getTop(Coordinates coordinates) {
         int row = coordinates.getRow();
@@ -72,6 +81,7 @@ public class Halma {
         return null;
     }
 
+
     public static Cell getBottom(Coordinates coordinates) {
         int row = coordinates.getRow();
         int col = coordinates.getCol();
@@ -81,6 +91,7 @@ public class Halma {
         }
         return null;
     }
+
 
     public static Cell getTopLeft(Coordinates coordinates) {
         int row = coordinates.getRow();
@@ -92,6 +103,7 @@ public class Halma {
         }
         return null;
     }
+
 
     public static Cell getTopRight(Coordinates coordinates) {
         int row = coordinates.getRow();
@@ -116,6 +128,7 @@ public class Halma {
         return null;
     }
 
+
     public static Cell getBottomRight(Coordinates coordinates) {
         int row = coordinates.getRow();
         int col = coordinates.getCol();
@@ -127,7 +140,35 @@ public class Halma {
         return null;
     }
 
+
     public static Cell getCellByCoordinate(final Coordinates coordinates) {
-        return coordinatesCellMap.get(coordinates);
+        return board.get(coordinates.getRow()).get(coordinates.getCol());
+    }
+
+
+    public static void makeMove(Move move) {
+        int sRow = move.getStartingCell().getRow();
+        int sCol = move.getStartingCell().getCol();
+        int dRow = move.getDestinationCell().getRow();
+        int dCol = move.getDestinationCell().getCol();
+        if (board.get(sRow).get(sCol).getPlayerType().equals(move.getPlayerType()) && board.get(dRow).get(dCol)
+                .getPlayerType().equals(PlayerType.NONE)) {
+            board.get(sRow).get(sCol).setPlayerType(PlayerType.NONE);
+            board.get(dRow).get(dCol).setPlayerType(move.getPlayerType());
+        }
+    }
+
+
+    public static void undoMove(Move move) {
+        int sRow = move.getStartingCell().getRow();
+        int sCol = move.getStartingCell().getCol();
+        int dRow = move.getDestinationCell().getRow();
+        int dCol = move.getDestinationCell().getCol();
+        if (board.get(sRow).get(sCol).getPlayerType().equals(PlayerType.NONE) && board.get(dRow).get(dCol)
+                .getPlayerType().equals(move.getPlayerType())) {
+            board.get(sRow).get(sCol).setPlayerType(move.getPlayerType());
+            board.get(dRow).get(dCol).setPlayerType(PlayerType.NONE);
+        }
+
     }
 }

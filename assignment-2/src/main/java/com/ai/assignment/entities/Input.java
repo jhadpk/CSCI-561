@@ -1,5 +1,6 @@
 package com.ai.assignment.entities;
 
+import com.ai.assignment.entities.board.Cell;
 import com.ai.assignment.entities.board.Halma;
 import com.ai.assignment.entities.enums.GameType;
 import com.ai.assignment.entities.enums.PlayerType;
@@ -16,6 +17,7 @@ public class Input {
     private PlayerType playerType;
     private long timeRemainingInSeconds;
     private Halma halma;
+    private ArrayList<ArrayList<Cell>> board;
 
     public void setGameType(final String gameType) {
         this.gameType = GameType.getGameType(gameType);
@@ -47,5 +49,13 @@ public class Input {
 
     public Halma getHalma() {
         return this.halma;
+    }
+
+    public void setBoard(final ArrayList<ArrayList<Cell>> board) {
+        this.board = board;
+    }
+
+    public ArrayList<ArrayList<Cell>> getBoard() {
+        return this.board;
     }
 }

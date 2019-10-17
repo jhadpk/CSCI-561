@@ -13,7 +13,9 @@ import java.util.ArrayList;
  */
 public interface Game {
 
-    ArrayList<Move> getNextMove(final Input input);
+    Move getNextMove(final Input input);
+
+    ArrayList<Cell> getPlayerPositions(final ArrayList<ArrayList<Cell>> board);
 
     /***
      * Note : A cell is null when its not on board. An available cell is not identified by null, rather by
