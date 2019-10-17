@@ -77,7 +77,7 @@ public class psvm {
 
         new BlackPlayer().getJumps(Halma.getCellByCoordinate(new Coordinates(2, 2)), null, jumpableMoves);
 
-        Cell[][] parentInfo = new BlackPlayer().getParentInfo(jumpableMoves, 5, 7);
+        Cell[][] parentInfo = new BlackPlayer().getParentInfo(jumpableMoves);
 
 
         for (int i = 0; i < 5; i++) {
