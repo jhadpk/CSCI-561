@@ -58,6 +58,8 @@ public class BlackPlayer extends Player {
 
         ArrayList<Move> availableMoves = new ArrayList<>();
 
+        //IDENTIFY MOVES WHICH ARE FOR CELLS IN BASECAMP, AND DO MINMAX ON THOSE MOVES ONLY
+
         if (isInCamp(cell)) {
             if (isNotNull(cell.getRight()) && cell.getRight().getPlayerType() == PlayerType.NONE) {
                 addSingleMove(MoveType.EMPTY, cell, cell.getRight(), availableMoves);
@@ -69,11 +71,9 @@ public class BlackPlayer extends Player {
                 addSingleMove(MoveType.EMPTY, cell, cell.getBottomRight(), availableMoves);
             }
             for (Move move : getJumpMoves(cell)) {
-                int numJumps = move.getPath().size();
-                Cell destinationCell = move.getPath().get(numJumps - 1);
                 //if after jumping its still in camp, find if it moved farther away from corner
-                if (isInCamp(destinationCell)) {
-                    if (isFarFromCorner(BLACK_CORNER_CELL, cell, destinationCell)) {
+                if (isInCamp(move.getDestinationCell())) {
+                    if (isFarFromCorner(BLACK_CORNER_CELL, cell, move.getDestinationCell())) {
                         availableMoves.add(move);
                     }
                 } else {
@@ -120,5 +120,14 @@ public class BlackPlayer extends Player {
     @Override
     public boolean isInOpposingCamp(Cell cell) {
         return Camp.whiteCamp.contains(cell.getRow() + "," + cell.getCol());
+    }
+
+
+    @Override
+    public boolean returnsToCamp(Cell startingCell, Cell destinationCell) {
+        if (!Camp.blackCamp.contains(startingCell.getRow() + "," + startingCell.getCol())) {
+            return Camp.blackCamp.contains(destinationCell.getRow() + "," + destinationCell.getCol());
+        }
+        return false;
     }
 }

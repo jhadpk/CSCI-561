@@ -32,6 +32,8 @@ public abstract class Player implements Game {
     protected int MAX = 1000;
     protected int MIN = -1000;
 
+    private ArrayList<Jump> jumps = new ArrayList<>();
+
     public void addSingleMove(MoveType moveType, Cell startingCell, Cell destinationCell,
             ArrayList<Move> availableMoves) {
         availableMoves.add(getMove(startingCell.getPlayerType(), moveType, Arrays.asList(startingCell, destinationCell),
@@ -40,11 +42,9 @@ public abstract class Player implements Game {
 
 
     public ArrayList<Move> getJumpMoves(final Cell cell) {
-        //hard coding board size to 16x16. Validate.
-        ArrayList<Jump> jumps = new ArrayList<>();
         getJumps(cell, null, jumps);
         ArrayList<Move> jumpMoves = new ArrayList<>();
-        for (ArrayList<Cell> path : getJumpingPaths(getParentInfo(jumps, 16, 16), cell)) {
+        for (ArrayList<Cell> path : getJumpingPaths(getParentInfo(jumps), cell)) {
             jumpMoves.add(getMove(cell.getPlayerType(), MoveType.JUMP, path, path.get(0), path.get(path.size() - 1)));
         }
         return jumpMoves;
@@ -53,7 +53,7 @@ public abstract class Player implements Game {
 
     public Move getMove(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell,
             Cell destinationCell) {
-        return new Move(playerType, moveType, path, startingCell, destinationCell);
+        return new Move(playerType, moveType, path, startingCell, destinationCell, isInCamp(startingCell));
     }
 
 
@@ -99,17 +99,23 @@ public abstract class Player implements Game {
     }
 
 
+    /***
+     * InBetweenCell should be having either Black or White player and should not be empty.
+     * DestinationCell should be empty and should not be same as StartingCell
+     * Player should not return to camp (from outside of camp)
+     */
     public boolean isJumpValid(final Cell startingCell, final Cell inBetweenCell, final Cell destinationCell) {
         return (inBetweenCell.getPlayerType() == PlayerType.BLACK || inBetweenCell.getPlayerType() == PlayerType.WHITE)
-                && destinationCell.getPlayerType() == PlayerType.NONE && isNotParentCell(startingCell, destinationCell)
-                && !isInCamp(destinationCell);
+                && destinationCell.getPlayerType() == PlayerType.NONE && isNotSame(startingCell, destinationCell)
+                && !returnsToCamp(startingCell, destinationCell);
     }
 
 
-    public boolean isValidMove(final Cell destinationCell) {
-        //should not move back to camp
-        return isNotNull(destinationCell) && !isInCamp(destinationCell)
-                && destinationCell.getPlayerType() == PlayerType.NONE;
+    /***
+     * Should not move back to camp, and no player should be occupying the cell.
+     */
+    public boolean isValidMove(final Cell destination) {
+        return isNotNull(destination) && !isInCamp(destination) && destination.getPlayerType() == PlayerType.NONE;
     }
 
 
@@ -118,14 +124,17 @@ public abstract class Player implements Game {
     }
 
 
-    public boolean isNotParentCell(Cell cell1, Cell cell2) {
+    public boolean isNotSame(Cell cell1, Cell cell2) {
         if (null == cell1) { return true; }
         return cell1.getRow() != cell2.getRow() || cell1.getCol() != cell2.getCol();
     }
 
 
-    public Cell[][] getParentInfo(ArrayList<Jump> jumps, final int rowSize, final int colSize) {
-        Cell[][] parentInfo = new Cell[rowSize][colSize];
+    /***
+     * Board is currently hardcoded to be 16x16
+     */
+    public Cell[][] getParentInfo(ArrayList<Jump> jumps) {
+        Cell[][] parentInfo = new Cell[16][16];
         for (Jump jump : jumps) {
             Cell current = jump.getCurrent();
             parentInfo[current.getRow()][current.getCol()] = jump.getParent();
@@ -168,12 +177,19 @@ public abstract class Player implements Game {
         return path;
     }
 
+
+    /***
+     * To be checked if the move happens within camp.
+     * Distance found is the manhatten distance from the corner of the camp.
+     * horizontalDistanceAtEnd >= horizontalDistanceAtStart && verticalDistanceAtEnd >= verticalDistanceAtStart
+     */
     public boolean isFarFromCorner(final Cell corner, final Cell startingCell, final Cell destinationCell) {
-        //check only if start and destination is in camp
-        //horizontalDistanceAtEnd >= horizontalDistanceAtStart && verticalDistanceAtEnd >= verticalDistanceAtStart
-        return Math.abs(destinationCell.getCol() - corner.getCol()) >= Math.abs(startingCell.getCol() - corner.getCol())
-                && Math.abs(destinationCell.getRow() - corner.getRow()) >= Math.abs(
-                startingCell.getRow() - corner.getRow());
+        if (isInCamp(startingCell) && isInCamp(destinationCell)) {
+            return Math.abs(destinationCell.getCol() - corner.getCol()) >= Math.abs(startingCell.getCol() - corner.getCol())
+                    && Math.abs(destinationCell.getRow() - corner.getRow()) >= Math.abs(
+                    startingCell.getRow() - corner.getRow());
+        }
+        return true;
     }
 
     public MoveToPlay executeMinMax(int depth, ArrayList<Move> moves, Move play, boolean maximizing, int alpha,

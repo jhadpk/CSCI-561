@@ -18,32 +18,46 @@ public class Move {
     private List<Cell> path;
     private Cell startingCell;
     private Cell destinationCell;
+    private boolean startsInCamp;
 
-    public Move(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell, Cell destinationCell) {
+
+    public Move(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell, Cell destinationCell,
+            boolean startsInCamp) {
         this.playerType = playerType;
         this.moveType = moveType;
         this.path = path;
         this.startingCell = startingCell;
         this.destinationCell = destinationCell;
+        this.startsInCamp = startsInCamp;
     }
+
 
     public PlayerType getPlayerType() {
         return this.playerType;
     }
 
+
     public MoveType getMoveType() {
         return this.moveType;
     }
+
 
     public List<Cell> getPath() {
         return this.path;
     }
 
+
     public Cell getStartingCell() {
         return this.startingCell;
     }
 
+
     public Cell getDestinationCell() {
         return this.destinationCell;
+    }
+
+
+    public boolean isStartingCellInCamp() {
+        return this.startsInCamp;
     }
 }

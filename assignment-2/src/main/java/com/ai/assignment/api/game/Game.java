@@ -37,4 +37,6 @@ public interface Game {
     boolean isInCamp(Cell cell);
 
     boolean isInOpposingCamp(Cell cell);
+
+    boolean returnsToCamp(final Cell startingCell, final Cell destinationCell);
 }

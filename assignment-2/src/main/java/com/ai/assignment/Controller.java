@@ -4,6 +4,7 @@ import com.ai.assignment.api.game.Game;
 import com.ai.assignment.api.game.GameInitializer;
 import com.ai.assignment.entities.Input;
 import com.ai.assignment.entities.Move;
+import com.ai.assignment.entities.Output;
 import com.ai.assignment.entities.board.Cell;
 import com.ai.assignment.entities.enums.MoveType;
 
@@ -35,7 +36,7 @@ public class Controller {
             if (null != input) {
                 GameInitializer.init();
                 Game adapter = GameInitializer.getPlayer(input);
-                generateOutput(null != adapter ? generateMultipleMoves(adapter.getNextMove(input)) : null);
+                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove(input)) : null);
             } else {
                 generateOutput(null);
             }
@@ -99,31 +100,32 @@ public class Controller {
     }
 
 
-    private ArrayList<Move> generateMultipleMoves(final Move optimalMove) {
-        ArrayList<Move> moves = new ArrayList<>();
+    private ArrayList<Output> generateOutputMoves(final Move optimalMove) {
+        ArrayList<Output> outputMoves = new ArrayList<>();
         if (optimalMove.getMoveType().equals(MoveType.JUMP)) {
             for (int i = 1; i < optimalMove.getPath().size(); i++) {
                 List<Cell> path = Arrays.asList(optimalMove.getPath().get(i - 1), optimalMove.getPath().get(i));
-                moves.add(new Move(optimalMove.getPlayerType(), MoveType.JUMP, path, path.get(0), path.get(1)));
+                outputMoves.add(new Output(optimalMove.getMoveType(), path.get(0), path.get(1)));
             }
         } else {
-            moves.add(optimalMove);
+            outputMoves.add(new Output(optimalMove.getMoveType(), optimalMove.getStartingCell(),
+                    optimalMove.getDestinationCell()));
         }
-        return moves;
+        return outputMoves;
     }
 
 
-    private void generateOutput(final ArrayList<Move> optimalMoves) {
-        //now move.getPath() will only have 2 cells
+    private void generateOutput(final ArrayList<Output> optimalMoves) {
         FileWriter fw = null;
         try {
             fw = new FileWriter(OUTPUT_FILE, false);
             if (null != optimalMoves && optimalMoves.size() != 0) {
                 StringBuilder output = new StringBuilder();
-                for (Move move : optimalMoves) {
-                    if (null != move.getMoveType() && 0 != move.getPath().size()) {
-                        output.append(move.getMoveType().getMoveCode()).append(BLANK_SPACE).append(
-                                getMove(move.getPath())).append(NEW_LINE);
+                for (Output move : optimalMoves) {
+                    if (move.isOutputNotNull()) {
+                        output.append(move.getMoveType().getMoveCode()).append(BLANK_SPACE).append(getMove(
+                                move.getStartingCell()).append(BLANK_SPACE).append(getMove(move.getDestinationCell()))
+                                .append(NEW_LINE));
                     }
                 }
                 fw.write(output.substring(0, output.toString().length() - 1));
@@ -142,12 +144,9 @@ public class Controller {
     }
 
 
-    private String getMove(List<com.ai.assignment.entities.board.Cell> cells) {
+    private StringBuilder getMove(Cell cell) {
         StringBuilder outputText = new StringBuilder();
-        for (Cell cell : cells) {
-            outputText.append(cell.getRow()).append(",").append(cell.getCol()).append(BLANK_SPACE);
-        }
-
-        return outputText.toString();
+        outputText.append(cell.getRow()).append(",").append(cell.getCol());
+        return outputText;
     }
 }

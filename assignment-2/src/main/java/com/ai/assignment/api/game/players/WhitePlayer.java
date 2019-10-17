@@ -119,4 +119,12 @@ public class WhitePlayer extends Player {
     public boolean isInOpposingCamp(Cell cell) {
         return Camp.blackCamp.contains(cell.getRow() + "," + cell.getCol());
     }
+
+    @Override
+    public boolean returnsToCamp(Cell startingCell, Cell destinationCell) {
+        if (!Camp.whiteCamp.contains(startingCell.getRow() + "," + startingCell.getCol())) {
+            return Camp.whiteCamp.contains(destinationCell.getRow() + "," + destinationCell.getCol());
+        }
+        return false;
+    }
 }
