@@ -13,7 +13,6 @@ import java.util.HashMap;
  */
 
 public class Halma {
-    private PlayerType currentPlayer;
     private static ArrayList<ArrayList<Cell>> board;
     private static HashMap<Coordinates, Cell> coordinatesCellMap;
 
@@ -36,16 +35,6 @@ public class Halma {
 
     public ArrayList<ArrayList<Cell>> getBoard() {
         return board;
-    }
-
-
-    public void setCurrentPlayer(final PlayerType playerType) {
-        this.currentPlayer = playerType;
-    }
-
-
-    public PlayerType getCurrentPlayer() {
-        return this.currentPlayer;
     }
 
 

@@ -37,11 +37,14 @@ public abstract class PlayerImpl implements Player {
     private final int MAX_DEPTH = 5;
     private final ArrayList<ArrayList<Cell>> board;
     private final double timeRemainingInMillis;
+    private final PlayerType player;
+
 
 
     public PlayerImpl(Input input) {
         this.board = input.getBoard();
         this.timeRemainingInMillis = input.getTimeRemainingInSeconds() * 1000;
+        this.player = input.getPlayerType();
     }
 
 
@@ -83,7 +86,8 @@ public abstract class PlayerImpl implements Player {
                     if (possibleMove.size() == 1) {
                         allBestMoves.add(new MoveToPlay(possibleMove.get(0)));
                     } else {
-                        allBestMoves.add(executeMinMax(0, possibleMove, null, true, 0, 0));
+                        allBestMoves.add(iterativeDeepeningAlphaBeta(possibleMove));
+                        //allBestMoves.add(executeMinMax(0, possibleMove, null, true, 0, 0));
                     }
                 }
             }
@@ -94,7 +98,8 @@ public abstract class PlayerImpl implements Player {
                     if (possibleMove.size() == 1) {
                         allBestMoves.add(new MoveToPlay(possibleMove.get(0)));
                     } else {
-                        allBestMoves.add(executeMinMax(0, possibleMove, null, true, 0, 0));
+                        allBestMoves.add(iterativeDeepeningAlphaBeta(possibleMove));
+                        //allBestMoves.add(executeMinMax(0, possibleMove, null, true, 0, 0));
                     }
                 }
             }
@@ -322,12 +327,11 @@ public abstract class PlayerImpl implements Player {
 
     public MoveToPlay iterativeDeepeningAlphaBeta(ArrayList<Move> moves) {
         MoveToPlay bestMove = new MoveToPlay();
-        for (int depth = 0; depth <= MAX_DEPTH; depth++) {
+        for (int depth = 1; depth <= MAX_DEPTH; depth++) {
             if (System.currentTimeMillis() - START_TIME >= timeRemainingInMillis) {
                 try {
                     throw new AgentTimeoutException();
                 } catch (AgentTimeoutException e) {
-                    //returning best move
                     return bestMove;
                 }
             }
@@ -346,34 +350,19 @@ public abstract class PlayerImpl implements Player {
      */
     public MoveToPlay executeMinMax(int depth, ArrayList<Move> moves, Move play, boolean maximizing, int alpha,
             int beta) {
-        if (depth == MAX_DEPTH || isGameOver() || moves.isEmpty()) {
+        if (depth <= 0 || isGameOver(player) || moves.isEmpty()) {
             if (null != play && null != play.getDestinationCell()) {
                 return new MoveToPlay(play);
             }
         }
-
-        //CHECK PIAZZA FOR THIS
         moves.sort(Comparator.comparing(Move::getHeuristic).reversed());
-        if (System.currentTimeMillis() - START_TIME >= timeRemainingInMillis) {
-            try {
-                throw new AgentTimeoutException();
-            } catch (AgentTimeoutException e) {
-                //returning best move
-                return new MoveToPlay(moves.get(0));
-            }
-        }
-
         MoveToPlay bestMove = new MoveToPlay();
         MoveToPlay nextMove;
-
         if (maximizing) {
             int bestScore = Integer.MIN_VALUE;
             for (Move move : moves) {
-
-                //check time every move made
-
                 makeMove(move);
-                nextMove = executeMinMax(depth + 1, getAvailableMoves(move.getDestinationCell()), move, false, alpha,
+                nextMove = executeMinMax(depth - 1, getAvailableMoves(move.getDestinationCell()), move, false, alpha,
                         beta);
                 undoMove(move);
                 if (nextMove.getHeuristic() > bestScore) {
@@ -390,7 +379,7 @@ public abstract class PlayerImpl implements Player {
             int bestScore = Integer.MAX_VALUE;
             for (Move move : moves) {
                 makeMove(move);
-                nextMove = executeMinMax(depth + 1, getAvailableMoves(move.getDestinationCell()), move, true, alpha,
+                nextMove = executeMinMax(depth - 1, getAvailableMoves(move.getDestinationCell()), move, true, alpha,
                         beta);
                 undoMove(move);
                 if (nextMove.getHeuristic() < bestScore) {
@@ -407,19 +396,25 @@ public abstract class PlayerImpl implements Player {
     }
 
 
-    private boolean isGameOver() {
-        return isWhiteCampOccupiedByBlack() || isBlackCampOccupiedByWhite();
+    private boolean isGameOver(PlayerType player) {
+        switch (player) {
+            case WHITE:
+                return isBlackCampOccupiedByWhite();
+            case BLACK:
+                return isWhiteCampOccupiedByBlack();
+            default:
+                return false;
+        }
     }
 
 
     private boolean isWhiteCampOccupiedByBlack() {
-        if (hasWhiteNotLeftCamp()) {
+        if (allWhitesStillInCamp()) {
             System.out.println("Can be start of game OR Opponent is spoiling,");
             return false;
         }
-        for (final String coord : Camp.whiteCamp) {
-            Cell cell = getCellByCoordinate(new Coordinates(coord));
-            if (cell.getPlayerType().equals(PlayerType.NONE)) {
+        for (final Cell whiteCampTile : Camp.whiteCampCells) {
+            if (whiteCampTile.getPlayerType().equals(PlayerType.NONE)) {
                 return false;
             }
         }
@@ -427,10 +422,9 @@ public abstract class PlayerImpl implements Player {
     }
 
 
-    private boolean hasWhiteNotLeftCamp() {
-        for (final String coord : Camp.whiteCamp) {
-            Cell cell = getCellByCoordinate(new Coordinates(coord));
-            if (cell.getPlayerType().equals(PlayerType.NONE) || cell.getPlayerType().equals(PlayerType.BLACK)) {
+    private boolean allWhitesStillInCamp() {
+        for (final Cell whiteCampTile : Camp.whiteCampCells) {
+            if (whiteCampTile.getPlayerType().equals(PlayerType.NONE) || whiteCampTile.getPlayerType().equals(PlayerType.BLACK)) {
                 return false;
             }
         }
@@ -439,13 +433,12 @@ public abstract class PlayerImpl implements Player {
 
 
     private boolean isBlackCampOccupiedByWhite() {
-        if (hasBlackNotLeftCamp()) {
+        if (allBlacksStillInCamp()) {
             System.out.println("Can be start of game OR Opponent is spoiling,");
             return false;
         }
-        for (final String coord : Camp.blackCamp) {
-            Cell cell = getCellByCoordinate(new Coordinates(coord));
-            if (cell.getPlayerType().equals(PlayerType.NONE)) {
+        for (final Cell blackCampTile : Camp.blackCampCells) {
+            if (blackCampTile.getPlayerType().equals(PlayerType.NONE)) {
                 return false;
             }
         }
@@ -453,10 +446,9 @@ public abstract class PlayerImpl implements Player {
     }
 
 
-    private boolean hasBlackNotLeftCamp() {
-        for (final String coord : Camp.blackCamp) {
-            Cell cell = getCellByCoordinate(new Coordinates(coord));
-            if (cell.getPlayerType().equals(PlayerType.NONE) || cell.getPlayerType().equals(PlayerType.WHITE)) {
+    private boolean allBlacksStillInCamp() {
+        for (final Cell blackCampTile : Camp.blackCampCells) {
+            if (blackCampTile.getPlayerType().equals(PlayerType.NONE) || blackCampTile.getPlayerType().equals(PlayerType.WHITE)) {
                 return false;
             }
         }

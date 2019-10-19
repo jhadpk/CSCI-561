@@ -26,7 +26,7 @@ public class Controller {
     private static final String OUTPUT_FILE = "/Users/deepakjha/output.txt";
     private static final String BLANK_SPACE = " ";
     private static final String NEW_LINE = "\n";
-    private static final String FAIL = "FAIL";
+    private static final String NO_OUTPUT = "";
 
 
     protected void play() {
@@ -85,7 +85,7 @@ public class Controller {
 
         for (int i=0; i<transposedBoard.size(); i++) {
             for (int j=0; j<transposedBoard.get(i).size(); j++) {
-                System.out.print(transposedBoard.get(i).get(j));
+                System.out.print(transposedBoard.get(i).get(j)+",");
             }
             System.out.println();
         }
@@ -144,11 +144,13 @@ public class Controller {
                 System.out.println(output.toString());
                 fw.write(output.substring(0, output.toString().length() - 1));
             } else {
-                fw.write(FAIL);
+                System.out.println("No move found");
+                fw.write(NO_OUTPUT);
             }
         } catch (IOException e) {
             try {
-                fw.write(FAIL);
+                System.out.println("IOException occurred");
+                fw.write(NO_OUTPUT);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
