@@ -39,4 +39,12 @@ public class MoveToPlay {
     public Move getMove() {
         return this.move;
     }
+
+
+    public static int getHeuristicForMove(Move move) {
+        makeMove(move);
+        int heuristicForMove = calculateBoardSituation(move.getPlayerType());
+        undoMove(move);
+        return heuristicForMove;
+    }
 }

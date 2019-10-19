@@ -1,18 +1,16 @@
 package com.ai.assignment;
 
-import java.util.Date;
-
-
 /**
  * @author deepakjha on 10/13/19
  * @project ai-assignments
  */
 public class homework extends Controller {
 
+    public static long START_TIME = System.currentTimeMillis();
+
     public static void main(String[] args) {
-        final long startTime = new Date().getTime();
         new homework().play();
-        final long endTime = new Date().getTime();
-        System.out.println(endTime - startTime);
+        final long endTime = System.currentTimeMillis();
+        System.out.println(endTime - START_TIME);
     }
 }

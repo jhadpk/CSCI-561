@@ -1,7 +1,7 @@
 package com.ai.assignment;
 
-import com.ai.assignment.api.game.Player;
-import com.ai.assignment.api.game.GameInitializer;
+import com.ai.assignment.api.GameInitializer;
+import com.ai.assignment.api.Player;
 import com.ai.assignment.entities.Input;
 import com.ai.assignment.entities.Move;
 import com.ai.assignment.entities.Output;

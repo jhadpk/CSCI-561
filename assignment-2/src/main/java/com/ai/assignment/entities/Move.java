@@ -6,6 +6,8 @@ import com.ai.assignment.entities.enums.PlayerType;
 
 import java.util.List;
 
+import static com.ai.assignment.entities.MoveToPlay.getHeuristicForMove;
+
 
 /**
  * @author deepakjha on 10/13/19
@@ -18,17 +20,13 @@ public class Move {
     private List<Cell> path;
     private Cell startingCell;
     private Cell destinationCell;
-    private boolean startsInCamp;
 
-
-    public Move(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell, Cell destinationCell,
-            boolean startsInCamp) {
+    public Move(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell, Cell destinationCell) {
         this.playerType = playerType;
         this.moveType = moveType;
         this.path = path;
         this.startingCell = startingCell;
         this.destinationCell = destinationCell;
-        this.startsInCamp = startsInCamp;
     }
 
 
@@ -56,8 +54,8 @@ public class Move {
         return this.destinationCell;
     }
 
-
-    public boolean isStartingCellInCamp() {
-        return this.startsInCamp;
+    public static int getHeuristic(Move move) {
+        return getHeuristicForMove(move);
     }
+
 }

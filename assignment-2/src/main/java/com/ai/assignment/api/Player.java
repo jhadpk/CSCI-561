@@ -1,4 +1,4 @@
-package com.ai.assignment.api.game;
+package com.ai.assignment.api;
 
 import com.ai.assignment.entities.Move;
 import com.ai.assignment.entities.board.Cell;

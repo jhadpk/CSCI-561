@@ -1,4 +1,4 @@
-package com.ai.assignment.api.game;
+package com.ai.assignment.api;
 
 
 import com.ai.assignment.entities.Camp;
@@ -6,6 +6,7 @@ import com.ai.assignment.entities.Input;
 import com.ai.assignment.entities.Jump;
 import com.ai.assignment.entities.Move;
 import com.ai.assignment.entities.MoveToPlay;
+import com.ai.assignment.entities.AgentTimeoutException;
 import com.ai.assignment.entities.board.Cell;
 import com.ai.assignment.entities.board.Coordinates;
 import com.ai.assignment.entities.enums.MoveType;
@@ -17,10 +18,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static com.ai.assignment.entities.board.Halma.calculateBoardSituation;
 import static com.ai.assignment.entities.board.Halma.getCellByCoordinate;
 import static com.ai.assignment.entities.board.Halma.makeMove;
 import static com.ai.assignment.entities.board.Halma.undoMove;
+import static com.ai.assignment.homework.START_TIME;
 
 
 /**
@@ -32,14 +33,15 @@ import static com.ai.assignment.entities.board.Halma.undoMove;
 public abstract class PlayerImpl implements Player {
     protected Cell BLACK_CORNER_CELL = new Cell(0, 0);
     protected Cell WHITE_CORNER_CELL = new Cell(15, 15);
-    protected int MAX = 1000000;
-    protected int MIN = -1000000;
 
+    private final int MAX_DEPTH = 5;
     private final ArrayList<ArrayList<Cell>> board;
+    private final double timeRemainingInMillis;
 
 
     public PlayerImpl(Input input) {
         this.board = input.getBoard();
+        this.timeRemainingInMillis = input.getTimeRemainingInSeconds() * 1000;
     }
 
 
@@ -156,7 +158,7 @@ public abstract class PlayerImpl implements Player {
 
     public Move getMove(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell,
             Cell destinationCell) {
-        return new Move(playerType, moveType, path, startingCell, destinationCell, isInCamp(startingCell));
+        return new Move(playerType, moveType, path, startingCell, destinationCell);
     }
 
 
@@ -204,7 +206,8 @@ public abstract class PlayerImpl implements Player {
     }
 
 
-    public void recursiveGetJumps(Cell startingCell, Cell destinationCell, ArrayList<Jump> jumps, ArrayList<Cell> visitedCells) {
+    public void recursiveGetJumps(Cell startingCell, Cell destinationCell, ArrayList<Jump> jumps,
+            ArrayList<Cell> visitedCells) {
         jumps.add(new Jump(startingCell, destinationCell));
         getJumps(startingCell, destinationCell, jumps, visitedCells);
     }
@@ -317,11 +320,46 @@ public abstract class PlayerImpl implements Player {
     }
 
 
+    public MoveToPlay iterativeDeepeningAlphaBeta(ArrayList<Move> moves) {
+        MoveToPlay bestMove = new MoveToPlay();
+        for (int depth = 0; depth <= MAX_DEPTH; depth++) {
+            if (System.currentTimeMillis() - START_TIME >= timeRemainingInMillis) {
+                try {
+                    throw new AgentTimeoutException();
+                } catch (AgentTimeoutException e) {
+                    //returning best move
+                    return bestMove;
+                }
+            }
+            MoveToPlay nextMove = executeMinMax(depth, moves, null, true, 0, 0);
+            if (nextMove.getHeuristic() > bestMove.getHeuristic()) {
+                bestMove = nextMove;
+            }
+        }
+        return bestMove;
+    }
+
+
+    /***
+     * Minimax algorithm with alpha beta pruning and using ierative deepening for search.
+     * If time taken exceeds time remaining, abruptly returning the best move as per heuristic.
+     */
     public MoveToPlay executeMinMax(int depth, ArrayList<Move> moves, Move play, boolean maximizing, int alpha,
             int beta) {
-        if (depth == 3 || isGameOver() || moves.isEmpty()) {
+        if (depth == MAX_DEPTH || isGameOver() || moves.isEmpty()) {
             if (null != play && null != play.getDestinationCell()) {
-                return new MoveToPlay(play, calculateBoardSituation(play.getPlayerType()));
+                return new MoveToPlay(play);
+            }
+        }
+
+        //CHECK PIAZZA FOR THIS
+        moves.sort(Comparator.comparing(Move::getHeuristic).reversed());
+        if (System.currentTimeMillis() - START_TIME >= timeRemainingInMillis) {
+            try {
+                throw new AgentTimeoutException();
+            } catch (AgentTimeoutException e) {
+                //returning best move
+                return new MoveToPlay(moves.get(0));
             }
         }
 
