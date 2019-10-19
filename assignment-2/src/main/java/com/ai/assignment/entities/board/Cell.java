@@ -1,7 +1,6 @@
 package com.ai.assignment.entities.board;
 
 
-import com.ai.assignment.entities.Camp;
 import com.ai.assignment.entities.enums.PlayerType;
 
 
@@ -13,8 +12,6 @@ public class Cell {
     private int row;
     private int col;
     private PlayerType playerType;
-
-    private int distance;
 
 
     public Cell(final int row, final int col) {
@@ -40,47 +37,6 @@ public class Cell {
 
     public PlayerType getPlayerType() {
         return this.playerType;
-    }
-
-
-    public void setDistance(int distance) {
-        this.distance = distance;
-    }
-
-
-    public int getDistance() {
-        int distance = 100000000; //setting to very high value
-        switch (this.playerType) {
-            case BLACK:
-                if (Camp.whiteCamp.contains(this.getRow() + "," + this.getCol())) {
-                    return 0;
-                }
-                for (String coord : Camp.whiteCamp) {
-                    String[] coordinates = coord.split(",");
-                    final int cellRow = Integer.parseInt(coordinates[0]);
-                    final int cellCol = Integer.parseInt(coordinates[1]);
-                    final int manhattenDist = Math.abs(this.getRow() - cellRow + this.getCol() - cellCol);
-                    if (manhattenDist < distance) {
-                        distance = manhattenDist;
-                    }
-                }
-                return distance;
-            case WHITE:
-                if (Camp.blackCamp.contains(this.getRow() + "," + this.getCol())) {
-                    return 0;
-                }
-                for (String coord : Camp.blackCamp) {
-                    final int cellRow = Integer.parseInt(coord.split(",")[0]);
-                    final int cellCol = Integer.parseInt(coord.split(",")[1]);
-                    final int manhattenDist = Math.abs(this.getRow() - cellRow + this.getCol() - cellCol);
-                    if (manhattenDist < distance) {
-                        distance = manhattenDist;
-                    }
-                }
-                return distance;
-            default:
-                return 0;
-        }
     }
 
 

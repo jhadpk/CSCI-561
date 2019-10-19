@@ -169,6 +169,27 @@ public class Halma {
             board.get(sRow).get(sCol).setPlayerType(move.getPlayerType());
             board.get(dRow).get(dCol).setPlayerType(PlayerType.NONE);
         }
+    }
 
+
+    /***
+     * Improve the complexity
+     */
+    public static int calculateBoardSituation(final PlayerType playerType) {
+        int heuristic = 0;
+        for (ArrayList<Cell> row : board) {
+            for (Cell tile : row) {
+                if (tile.getPlayerType() == playerType) {
+                    heuristic = heuristic + calculateDistanceFromCorner(playerType, tile);
+                }
+            }
+        }
+        return heuristic;
+    }
+
+
+    private static int calculateDistanceFromCorner(final PlayerType playerType, final Cell cell) {
+        final Coordinates goal = playerType == PlayerType.WHITE ? new Coordinates(0, 0) : new Coordinates(15, 15);
+        return 100 - (Math.abs(cell.getRow() - goal.getRow()) + Math.abs(cell.getCol() - goal.getCol()));
     }
 }

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class Input {
     private GameType gameType;
     private PlayerType playerType;
-    private long timeRemainingInSeconds;
+    private double timeRemainingInSeconds;
     private Halma halma;
     private ArrayList<ArrayList<Cell>> board;
 
@@ -36,10 +36,10 @@ public class Input {
     }
 
     public void setTimeRemainingInSeconds(final String time) {
-        this.timeRemainingInSeconds = Long.parseLong(time);
+        this.timeRemainingInSeconds = Double.parseDouble(time);
     }
 
-    public long getTimeRemainingInSeconds() {
+    public double getTimeRemainingInSeconds() {
         return this.timeRemainingInSeconds;
     }
 

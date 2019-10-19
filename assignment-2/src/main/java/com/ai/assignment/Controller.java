@@ -1,6 +1,6 @@
 package com.ai.assignment;
 
-import com.ai.assignment.api.game.Game;
+import com.ai.assignment.api.game.Player;
 import com.ai.assignment.api.game.GameInitializer;
 import com.ai.assignment.entities.Input;
 import com.ai.assignment.entities.Move;
@@ -22,8 +22,8 @@ import java.util.List;
  * @project ai-assignments
  */
 public class Controller {
-    private static final String INPUT_FILE = "/Users/deepakjha/assignment2/input.txt";
-    private static final String OUTPUT_FILE = "/Users/deepakjha/assignment2/output.txt";
+    private static final String INPUT_FILE = "/Users/deepakjha/input.txt";
+    private static final String OUTPUT_FILE = "/Users/deepakjha/output.txt";
     private static final String BLANK_SPACE = " ";
     private static final String NEW_LINE = "\n";
     private static final String FAIL = "FAIL";
@@ -35,12 +35,13 @@ public class Controller {
             Input input = validateAndExtractInput(br);
             if (null != input) {
                 GameInitializer.init();
-                Game adapter = GameInitializer.getPlayer(input);
-                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove(input)) : null);
+                Player adapter = GameInitializer.getPlayer(input);
+                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove()) : null);
             } else {
                 generateOutput(null);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             generateOutput(null);
         }
     }
@@ -80,6 +81,15 @@ public class Controller {
                 y++;
             }
         }
+        final ArrayList<ArrayList<String>> transposedBoard = transpose(boardConfiguration);
+
+        for (int i=0; i<transposedBoard.size(); i++) {
+            for (int j=0; j<transposedBoard.get(i).size(); j++) {
+                System.out.print(transposedBoard.get(i).get(j));
+            }
+            System.out.println();
+        }
+
         return transpose(boardConfiguration);
     }
 
@@ -101,6 +111,9 @@ public class Controller {
 
 
     private ArrayList<Output> generateOutputMoves(final Move optimalMove) {
+        if (null == optimalMove) {
+            return null;
+        }
         ArrayList<Output> outputMoves = new ArrayList<>();
         if (optimalMove.getMoveType().equals(MoveType.JUMP)) {
             for (int i = 1; i < optimalMove.getPath().size(); i++) {
@@ -128,6 +141,7 @@ public class Controller {
                                 .append(NEW_LINE));
                     }
                 }
+                System.out.println(output.toString());
                 fw.write(output.substring(0, output.toString().length() - 1));
             } else {
                 fw.write(FAIL);

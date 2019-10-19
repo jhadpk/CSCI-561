@@ -1,5 +1,10 @@
 package com.ai.assignment.entities;
 
+import static com.ai.assignment.entities.board.Halma.calculateBoardSituation;
+import static com.ai.assignment.entities.board.Halma.makeMove;
+import static com.ai.assignment.entities.board.Halma.undoMove;
+
+
 /**
  * @author deepakjha on 10/17/19
  * @project ai-assignments
@@ -8,31 +13,28 @@ public class MoveToPlay {
     public int heuristic;
     public Move move;
 
-
     public MoveToPlay() {
-        heuristic = 0;
+        this.heuristic = 0;
     }
-
-
-    public MoveToPlay(int heuristic) {
-        this.heuristic = heuristic;
-    }
-
 
     public MoveToPlay(Move move) {
-        this.heuristic = move.getDestinationCell().getDistance();
+        makeMove(move);
+        this.heuristic = calculateBoardSituation(move.getPlayerType());
         this.move = move;
+        undoMove(move);
     }
 
 
-    public MoveToPlay(int heuristic, Move move) {
+    public MoveToPlay(Move move, int heuristic) {
         this.heuristic = heuristic;
         this.move = move;
     }
+
 
     public int getHeuristic() {
         return this.heuristic;
     }
+
 
     public Move getMove() {
         return this.move;

@@ -1,17 +1,15 @@
 package com.ai.assignment.api.game.players;
 
 
-import com.ai.assignment.api.game.Player;
+import com.ai.assignment.api.game.PlayerImpl;
 import com.ai.assignment.entities.Camp;
 import com.ai.assignment.entities.Input;
 import com.ai.assignment.entities.Move;
-import com.ai.assignment.entities.MoveToPlay;
 import com.ai.assignment.entities.board.Cell;
 import com.ai.assignment.entities.enums.MoveType;
 import com.ai.assignment.entities.enums.PlayerType;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 
 import static com.ai.assignment.entities.enums.PlayerType.BLACK;
 
@@ -20,47 +18,22 @@ import static com.ai.assignment.entities.enums.PlayerType.BLACK;
  * @author deepakjha on 10/13/19
  * @project ai-assignments
  */
-public class BlackPlayer extends Player {
+public class BlackPlayer extends PlayerImpl {
 
-    @Override
-    public Move getNextMove(final Input input) {
-        ArrayList<Cell> blackPlayers = getPlayerPositions(input.getBoard());
-        ArrayList<MoveToPlay> allBestMoves = new ArrayList<>();
-        for (Cell cell : blackPlayers) {
-            allBestMoves.add(executeMinMax(0, getAvailableMoves(cell), null, true,0,0));
-        }
-        allBestMoves.sort(Comparator.comparing(MoveToPlay::getHeuristic).reversed());
-        return allBestMoves.get(0).getMove();
+    public BlackPlayer(Input input) {
+        super(input);
     }
 
 
     @Override
-    public ArrayList<Cell> getPlayerPositions(ArrayList<ArrayList<Cell>> board) {
-        ArrayList<Cell> blackPlayerPositions = new ArrayList<>();
-        for (ArrayList<Cell> row : board) {
-            for (Cell cell : row) {
-                if (cell.getPlayerType().equals(BLACK)) {
-                    blackPlayerPositions.add(cell);
-                }
-            }
-        }
-        return blackPlayerPositions;
+    public Move getNextMove() {
+        return decideNextMove(getAllPlayerPositions(BLACK));
     }
-
 
     @Override
     public ArrayList<Move> getAvailableMoves(Cell cell) {
-        if (isInOpposingCamp(cell)) {
-            // keep cell within opposing camp and it should not move outside.
-            // for now not finding any move if player has reached opposing camp, later add logic to remain in opp camp
-            return null;
-        }
-
         ArrayList<Move> availableMoves = new ArrayList<>();
-
-        //IDENTIFY MOVES WHICH ARE FOR CELLS IN BASECAMP, AND DO MINMAX ON THOSE MOVES ONLY
-
-        if (isInCamp(cell)) {
+        if (isInCamp(cell) || isInOpposingCamp(cell)) {
             if (isNotNull(cell.getRight()) && cell.getRight().getPlayerType() == PlayerType.NONE) {
                 addSingleMove(MoveType.EMPTY, cell, cell.getRight(), availableMoves);
             }
@@ -76,40 +49,38 @@ public class BlackPlayer extends Player {
                     if (isFarFromCorner(BLACK_CORNER_CELL, cell, move.getDestinationCell())) {
                         availableMoves.add(move);
                     }
+                } else if (isInOpposingCamp(cell)) {
+                    //cell was in whiteCamp before beginning the move. Only move towards white corner cell (15,15)
+                    if (isCloserToCorner(WHITE_CORNER_CELL, cell, move.getDestinationCell())) {
+                        availableMoves.add(move);
+                    }
                 } else {
                     availableMoves.add(move);
                 }
             }
         } else {
-            if (isValidMove(cell.getLeft())) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getLeft(), availableMoves);
+            findMovesOutsideCamp(cell, availableMoves);
+
+            //if any move can enter the opposite camp - make the best of that move
+            final ArrayList<Move> bestMovesToEnterOppositionCamp = getBestMoveToEnterOppositionCamp(availableMoves);
+            if (bestMovesToEnterOppositionCamp.size() != 0) {
+                availableMoves.retainAll(bestMovesToEnterOppositionCamp);
             }
-            if (isValidMove(cell.getRight())) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getRight(), availableMoves);
-            }
-            if (isValidMove(cell.getTop())) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getTop(), availableMoves);
-            }
-            if (isValidMove(cell.getBottom())) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getBottom(), availableMoves);
-            }
-            if (isValidMove(cell.getTopLeft())) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getTopLeft(), availableMoves);
-            }
-            if (isValidMove(cell.getTopRight())) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getTopRight(), availableMoves);
-            }
-            if (isValidMove(cell.getBottomLeft())) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getBottomLeft(), availableMoves);
-            }
-            if (isValidMove(cell.getBottomRight())) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getBottomRight(), availableMoves);
-            }
-            availableMoves.addAll(getJumpMoves(cell));
         }
         return availableMoves;
     }
 
+
+    @Override
+    public ArrayList<Move> getBestMoveToEnterOppositionCamp(ArrayList<Move> allAvailableMoves) {
+        final ArrayList<Move> bestMovesToEnterOppositionCamp = new ArrayList<>();
+        for (Move move : allAvailableMoves) {
+            if (Camp.whiteCamp.contains(move.getDestinationCell().getRow() + "," + move.getDestinationCell().getCol())) {
+                bestMovesToEnterOppositionCamp.add(move);
+            }
+        }
+        return bestMovesToEnterOppositionCamp;
+    }
 
     @Override
     public boolean isInCamp(Cell cell) {
@@ -125,8 +96,10 @@ public class BlackPlayer extends Player {
 
     @Override
     public boolean returnsToCamp(Cell startingCell, Cell destinationCell) {
-        if (!Camp.blackCamp.contains(startingCell.getRow() + "," + startingCell.getCol())) {
-            return Camp.blackCamp.contains(destinationCell.getRow() + "," + destinationCell.getCol());
+        if (isNotNull(startingCell) && isNotNull(destinationCell)) {
+            if (!Camp.blackCamp.contains(startingCell.getRow() + "," + startingCell.getCol())) {
+                return Camp.blackCamp.contains(destinationCell.getRow() + "," + destinationCell.getCol());
+            }
         }
         return false;
     }

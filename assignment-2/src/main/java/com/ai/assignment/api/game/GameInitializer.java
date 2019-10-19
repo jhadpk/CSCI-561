@@ -37,13 +37,13 @@ public class GameInitializer {
      * @param input using which search adapter is to be found.
      * @return Fully qualified classname for the search adapter for the type
      */
-    public static Game getPlayer(final Input input)
+    public static Player getPlayer(final Input input)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException,
             InvocationTargetException {
         String className = getAdapterFor(input.getPlayerType());
         if (null != className) {
             Class<?> adapterClass = Class.forName(className);
-            return (Game) adapterClass.getConstructor(Input.class).newInstance(input);
+            return (Player) adapterClass.getConstructor(Input.class).newInstance(input);
         }
         return null;
     }
