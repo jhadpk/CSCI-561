@@ -33,7 +33,7 @@ public interface Player {
      */
     ArrayList<Move> getAvailableMoves(Cell cell);
 
-    ArrayList<Move> getBestMoveToEnterOppositionCamp(ArrayList<Move> allAvailableMoves);
+    ArrayList<Move> getOppositionCampEnteringMoves(ArrayList<Move> allAvailableMoves);
 
     boolean isInCamp(Cell cell);
 

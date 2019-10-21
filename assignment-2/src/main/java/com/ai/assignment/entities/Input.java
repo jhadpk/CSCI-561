@@ -18,6 +18,7 @@ public class Input {
     private double timeRemainingInSeconds;
     private Halma halma;
     private ArrayList<ArrayList<Cell>> board;
+    private int maxDepth;
 
     public void setGameType(final String gameType) {
         this.gameType = GameType.getGameType(gameType);
@@ -57,5 +58,13 @@ public class Input {
 
     public ArrayList<ArrayList<Cell>> getBoard() {
         return this.board;
+    }
+
+    public void setMaxDepth(final int maxDepth) {
+        this.maxDepth = maxDepth;
+    }
+
+    public int getMaxDepth() {
+        return this.maxDepth;
     }
 }

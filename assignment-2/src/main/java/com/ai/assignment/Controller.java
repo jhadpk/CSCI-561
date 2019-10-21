@@ -24,10 +24,29 @@ import java.util.List;
 public class Controller {
     private static final String INPUT_FILE = "/Users/deepakjha/input.txt";
     private static final String OUTPUT_FILE = "/Users/deepakjha/output.txt";
+    private static final String CALIBRATE_OUTPUT = "/Users/deepakjha/calibration.txt";
+
     private static final String BLANK_SPACE = " ";
     private static final String NEW_LINE = "\n";
     private static final String NO_OUTPUT = "";
 
+
+    protected void calibrate() {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(INPUT_FILE));
+            Input input = validateAndExtractInput(br);
+            if (null != input) {
+                GameInitializer.init();
+                Player adapter = GameInitializer.getPlayer(input);
+                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove()) : null, CALIBRATE_OUTPUT);
+            } else {
+                generateOutput(null, OUTPUT_FILE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            generateOutput(null, OUTPUT_FILE);
+        }
+    }
 
     protected void play() {
         try {
@@ -36,13 +55,13 @@ public class Controller {
             if (null != input) {
                 GameInitializer.init();
                 Player adapter = GameInitializer.getPlayer(input);
-                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove()) : null);
+                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove()) : null, OUTPUT_FILE);
             } else {
-                generateOutput(null);
+                generateOutput(null, OUTPUT_FILE);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            generateOutput(null);
+            generateOutput(null, OUTPUT_FILE);
         }
     }
 
@@ -55,6 +74,7 @@ public class Controller {
             input.setTimeRemainingInSeconds(br.readLine());
             input.setHalma(getBoardConfig(br));
             input.setBoard(input.getHalma().getBoard());
+            input.setMaxDepth(5);
             return input;
         } catch (IOException e) {
             return null;
@@ -128,10 +148,10 @@ public class Controller {
     }
 
 
-    private void generateOutput(final ArrayList<Output> optimalMoves) {
+    private void generateOutput(final ArrayList<Output> optimalMoves, String outputFile) {
         FileWriter fw = null;
         try {
-            fw = new FileWriter(OUTPUT_FILE, false);
+            fw = new FileWriter(outputFile, false);
             if (null != optimalMoves && optimalMoves.size() != 0) {
                 StringBuilder output = new StringBuilder();
                 for (Output move : optimalMoves) {
