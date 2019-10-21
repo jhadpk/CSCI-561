@@ -12,8 +12,8 @@ import java.util.List;
  * @project ai-assignments
  */
 public class Controller {
-    private static final String INPUT_FILE = "/Users/deepakjha/input.txt";
-    private static final String OUTPUT_FILE = "/Users/deepakjha/output.txt";
+    private static final String INPUT_FILE = "/Users/deepakjha/Downloads/testcases/input4.txt";
+    private static final String OUTPUT_FILE = "/Users/deepakjha/Downloads/outputs/output4.txt";
     private static final String BLANK_SPACE = " ";
     private static final String FAIL = "FAIL";
 
