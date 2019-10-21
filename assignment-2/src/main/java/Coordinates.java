@@ -1,5 +1,3 @@
-package com.ai.assignment.entities.board;
-
 /**
  * @author deepakjha on 10/14/19
  * @project ai-assignments

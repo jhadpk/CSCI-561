@@ -1,8 +1,3 @@
-package com.ai.assignment.entities.board;
-
-import com.ai.assignment.entities.Move;
-import com.ai.assignment.entities.enums.PlayerType;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 

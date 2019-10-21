@@ -1,33 +1,20 @@
-package com.ai.assignment.api.players;
-
-
-import com.ai.assignment.api.PlayerImpl;
-import com.ai.assignment.entities.Camp;
-import com.ai.assignment.entities.Input;
-import com.ai.assignment.entities.Move;
-import com.ai.assignment.entities.board.Cell;
-import com.ai.assignment.entities.enums.MoveType;
-import com.ai.assignment.entities.enums.PlayerType;
-
 import java.util.ArrayList;
-
-import static com.ai.assignment.entities.enums.PlayerType.BLACK;
 
 
 /**
  * @author deepakjha on 10/13/19
  * @project ai-assignments
  */
-public class BlackPlayer extends PlayerImpl {
+public class WhitePlayer extends PlayerImpl {
 
-    public BlackPlayer(Input input) {
+    public WhitePlayer(Input input) {
         super(input);
     }
 
 
     @Override
     public Move getNextMove() {
-        return decideNextMove(getAllPlayerPositions(BLACK));
+        return decideNextMove(getAllPlayerPositions(PlayerType.WHITE));
     }
 
 
@@ -48,17 +35,11 @@ public class BlackPlayer extends PlayerImpl {
                     firstPriorityMoves.add(move);
                 }
             }
-            if (firstPriorityMoves.size() != 0) {
-                allSingleMoves.retainAll(firstPriorityMoves);
-            } else {
-                //moves with destination cell within camp
+            if (firstPriorityMoves.size() == 0) {
                 for (Move move : allSingleMoves) {
-                    if (isFarFromCorner(BLACK_CORNER_CELL, cell, move.getDestinationCell())) {
+                    if (isFarFromCorner(WHITE_CORNER_CELL, cell, move.getDestinationCell())) {
                         secondPriorityMoves.add(move);
                     }
-                }
-                if (secondPriorityMoves.size() != 0) {
-                    allSingleMoves.retainAll(secondPriorityMoves);
                 }
             }
 
@@ -75,7 +56,7 @@ public class BlackPlayer extends PlayerImpl {
             } else {
                 //moves with destination cell within camp
                 for (Move move : allJumpMoves) {
-                    if (isFarFromCorner(BLACK_CORNER_CELL, cell, move.getDestinationCell())) {
+                    if (isFarFromCorner(WHITE_CORNER_CELL, cell, move.getDestinationCell())) {
                         secondPriorityJumps.add(move);
                     }
                 }
@@ -83,20 +64,22 @@ public class BlackPlayer extends PlayerImpl {
                     allJumpMoves.retainAll(secondPriorityJumps);
                 }
             }
-            availableMoves.addAll(allSingleMoves);
-            availableMoves.addAll(allJumpMoves);
+            availableMoves.addAll(firstPriorityMoves);
+            availableMoves.addAll(secondPriorityMoves);
+            availableMoves.addAll(firstPriorityJumps);
+            availableMoves.addAll(secondPriorityJumps);
         } else if (isInOpposingCamp(cell)) {
-            if (isNotNull(cell.getRight()) && cell.getRight().getPlayerType() == PlayerType.NONE) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getRight(), availableMoves);
+            if (isNotNull(cell.getLeft()) && cell.getLeft().getPlayerType() == PlayerType.NONE) {
+                addSingleMove(MoveType.EMPTY, cell, cell.getLeft(), availableMoves);
             }
-            if (isNotNull(cell.getBottom()) && cell.getBottom().getPlayerType() == PlayerType.NONE) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getBottom(), availableMoves);
+            if (isNotNull(cell.getTop()) && cell.getTop().getPlayerType() == PlayerType.NONE) {
+                addSingleMove(MoveType.EMPTY, cell, cell.getTop(), availableMoves);
             }
-            if (isNotNull(cell.getBottomRight()) && cell.getBottomRight().getPlayerType() == PlayerType.NONE) {
-                addSingleMove(MoveType.EMPTY, cell, cell.getBottomRight(), availableMoves);
+            if (isNotNull(cell.getTopLeft()) && cell.getTopLeft().getPlayerType() == PlayerType.NONE) {
+                addSingleMove(MoveType.EMPTY, cell, cell.getTopLeft(), availableMoves);
             }
             for (Move move : getJumpMoves(cell)) {
-                if (isCloserToCorner(WHITE_CORNER_CELL, cell, move.getDestinationCell())) {
+                if (isCloserToCorner(BLACK_CORNER_CELL, cell, move.getDestinationCell())) {
                     availableMoves.add(move);
                 }
             }
@@ -104,9 +87,9 @@ public class BlackPlayer extends PlayerImpl {
             findMovesOutsideCamp(cell, availableMoves);
 
             //if any move can enter the opposite camp - make the best of that move
-            final ArrayList<Move> bestMovesToEnterOppositionCamp = getOppositionCampEnteringMoves(availableMoves);
-            if (bestMovesToEnterOppositionCamp.size() != 0) {
-                availableMoves.retainAll(bestMovesToEnterOppositionCamp);
+            final ArrayList<Move> oppositionCampEnteringMoves = getOppositionCampEnteringMoves(availableMoves);
+            if (oppositionCampEnteringMoves.size() != 0) {
+                availableMoves.retainAll(oppositionCampEnteringMoves);
             }
         }
         return availableMoves;
@@ -117,7 +100,7 @@ public class BlackPlayer extends PlayerImpl {
     public ArrayList<Move> getOppositionCampEnteringMoves(ArrayList<Move> allAvailableMoves) {
         final ArrayList<Move> bestMovesToEnterOppositionCamp = new ArrayList<>();
         for (Move move : allAvailableMoves) {
-            if (Camp.whiteCamp.contains(
+            if (Camp.blackCamp.contains(
                     move.getDestinationCell().getRow() + "," + move.getDestinationCell().getCol())) {
                 bestMovesToEnterOppositionCamp.add(move);
             }
@@ -128,21 +111,21 @@ public class BlackPlayer extends PlayerImpl {
 
     @Override
     public boolean isInCamp(Cell cell) {
-        return Camp.blackCamp.contains(cell.getRow() + "," + cell.getCol());
+        return Camp.whiteCamp.contains(cell.getRow() + "," + cell.getCol());
     }
 
 
     @Override
     public boolean isInOpposingCamp(Cell cell) {
-        return Camp.whiteCamp.contains(cell.getRow() + "," + cell.getCol());
+        return Camp.blackCamp.contains(cell.getRow() + "," + cell.getCol());
     }
 
 
     @Override
     public boolean returnsToCamp(Cell startingCell, Cell destinationCell) {
         if (isNotNull(startingCell) && isNotNull(destinationCell)) {
-            if (!Camp.blackCamp.contains(startingCell.getRow() + "," + startingCell.getCol())) {
-                return Camp.blackCamp.contains(destinationCell.getRow() + "," + destinationCell.getCol());
+            if (!Camp.whiteCamp.contains(startingCell.getRow() + "," + startingCell.getCol())) {
+                return Camp.whiteCamp.contains(destinationCell.getRow() + "," + destinationCell.getCol());
             }
         }
         return false;

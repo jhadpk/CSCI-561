@@ -1,9 +1,3 @@
-package com.ai.assignment.entities;
-
-import static com.ai.assignment.entities.board.Halma.calculateBoardSituation;
-import static com.ai.assignment.entities.board.Halma.makeMove;
-import static com.ai.assignment.entities.board.Halma.undoMove;
-
 
 /**
  * @author deepakjha on 10/17/19
@@ -28,12 +22,12 @@ public class MoveToPlay {
             • If that’s not possible, move a piece in their camp further away from the corner of their
             own camp ([0,0] or [15,15] respectively).*/
 
-        makeMove(move);
+        Halma.makeMove(move);
 
 
-        this.heuristic = calculateBoardSituation(move.getPlayerType());
+        this.heuristic = Halma.calculateBoardSituation(move.getPlayerType());
         this.move = move;
-        undoMove(move);
+        Halma.undoMove(move);
     }
 
 
@@ -54,9 +48,9 @@ public class MoveToPlay {
 
 
     public static int getHeuristicForMove(Move move) {
-        makeMove(move);
-        int heuristicForMove = calculateBoardSituation(move.getPlayerType());
-        undoMove(move);
+        Halma.makeMove(move);
+        int heuristicForMove = Halma.calculateBoardSituation(move.getPlayerType());
+        Halma.undoMove(move);
         return heuristicForMove;
     }
 }

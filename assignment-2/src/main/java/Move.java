@@ -1,12 +1,5 @@
-package com.ai.assignment.entities;
-
-import com.ai.assignment.entities.board.Cell;
-import com.ai.assignment.entities.enums.MoveType;
-import com.ai.assignment.entities.enums.PlayerType;
-
 import java.util.List;
 
-import static com.ai.assignment.entities.MoveToPlay.getHeuristicForMove;
 
 
 /**
@@ -55,7 +48,7 @@ public class Move {
     }
 
     public static int getHeuristic(Move move) {
-        return getHeuristicForMove(move);
+        return MoveToPlay.getHeuristicForMove(move);
     }
 
 }

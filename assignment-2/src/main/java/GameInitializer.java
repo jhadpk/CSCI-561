@@ -1,10 +1,3 @@
-package com.ai.assignment.api;
-
-import com.ai.assignment.api.players.BlackPlayer;
-import com.ai.assignment.api.players.WhitePlayer;
-import com.ai.assignment.entities.Input;
-import com.ai.assignment.entities.enums.PlayerType;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 

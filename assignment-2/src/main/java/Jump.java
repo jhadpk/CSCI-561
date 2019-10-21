@@ -1,8 +1,3 @@
-package com.ai.assignment.entities;
-
-import com.ai.assignment.entities.board.Cell;
-
-
 /**
  * @author deepakjha on 10/14/19
  * @project ai-assignments

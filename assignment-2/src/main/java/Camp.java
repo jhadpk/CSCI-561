@@ -1,13 +1,7 @@
-package com.ai.assignment.entities;
-
-import com.ai.assignment.entities.board.Cell;
-import com.ai.assignment.entities.board.Coordinates;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.ai.assignment.entities.board.Halma.getCellByCoordinate;
 
 
 /**
@@ -29,10 +23,10 @@ public class Camp {
                 "14,11", "14,12", "14,13", "14,14", "14,15", "15,11", "15,12", "15,13", "15,14", "15,15");
 
         for (String coordinate : blackCamp) {
-            blackCampCells.add(getCellByCoordinate(new Coordinates(coordinate)));
+            blackCampCells.add(Halma.getCellByCoordinate(new Coordinates(coordinate)));
         }
         for (String coordinate : whiteCamp) {
-            whiteCampCells.add(getCellByCoordinate(new Coordinates(coordinate)));
+            whiteCampCells.add(Halma.getCellByCoordinate(new Coordinates(coordinate)));
         }
     }
 }

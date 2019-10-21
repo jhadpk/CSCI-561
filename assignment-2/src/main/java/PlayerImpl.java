@@ -1,26 +1,8 @@
-package com.ai.assignment.api;
-
-
-import com.ai.assignment.entities.Camp;
-import com.ai.assignment.entities.Input;
-import com.ai.assignment.entities.Jump;
-import com.ai.assignment.entities.Move;
-import com.ai.assignment.entities.MoveToPlay;
-import com.ai.assignment.entities.board.Cell;
-import com.ai.assignment.entities.board.Coordinates;
-import com.ai.assignment.entities.enums.MoveType;
-import com.ai.assignment.entities.enums.PlayerType;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import static com.ai.assignment.entities.MoveToPlay.getHeuristicForMove;
-import static com.ai.assignment.entities.board.Halma.getCellByCoordinate;
-import static com.ai.assignment.entities.board.Halma.makeMove;
-import static com.ai.assignment.entities.board.Halma.undoMove;
 
 
 /**
@@ -74,7 +56,10 @@ public abstract class PlayerImpl implements Player {
     /***
      * If there are any players in camp, find their possible move.
      * If there is a possible move for any of such camp players - execute that move.
-     * Else, get all possible moves and execute one of them based on minimax (aplha beta pruned)
+     * Priority of moves:
+     *  1. Movement outside camp
+     *  2. Movement farther away from corner.
+     *  3. If 1 and 2 are not possible, make any move out of camp.
      */
     protected Move decideNextMove(final ArrayList<Cell> allPlayers) {
         ArrayList<MoveToPlay> allBestMoves = new ArrayList<>();
@@ -84,20 +69,47 @@ public abstract class PlayerImpl implements Player {
                 playersInCamp.add(cell);
             }
         }
+
+        // Finding moves for players present in camp
         ArrayList<ArrayList<Move>> movesForCampPlayers = new ArrayList<>();
         if (playersInCamp.size() != 0) {
             for (Cell cell : playersInCamp) {
-                movesForCampPlayers.add(getAvailableMoves(cell));
+                final ArrayList<Move> availableMoves = getAvailableMoves(cell);
+                if (!availableMoves.isEmpty()) {
+                    movesForCampPlayers.add(getAvailableMoves(cell));
+                }
             }
         }
+
+        final ArrayList<Move> movesGoingOutOfCamp = new ArrayList<>();
         if (movesForCampPlayers.size() != 0) {
+            // Find any move which is taking out of camp
             for (ArrayList<Move> possibleMove : movesForCampPlayers) {
-                if (possibleMove.size() != 0) {
-                    if (possibleMove.size() == 1) {
-                        allBestMoves.add(new MoveToPlay(possibleMove.get(0)));
-                    } else {
-                        allBestMoves.add(iterativeDeepeningAlphaBeta(possibleMove));
-                        //allBestMoves.add(executeMinMax(0, possibleMove, null, true, 0, 0));
+                for (Move move : possibleMove) {
+                    if (!isInCamp(move.getDestinationCell())) {
+                        movesGoingOutOfCamp.add(move);
+                    }
+                }
+            }
+            //If any move going out of camp exists, execute that
+            if (movesGoingOutOfCamp.size() != 0) {
+                if (movesGoingOutOfCamp.size() == 1) {
+                    allBestMoves.add(new MoveToPlay(movesGoingOutOfCamp.get(0)));
+                } else {
+                    allBestMoves.add(iterativeDeepeningAlphaBeta(movesGoingOutOfCamp));
+                    //allBestMoves.add(executeMinMax(0, movesGoingOutOfCamp, null, true, 0, 0));
+                }
+            } else {
+                //Since no move is going out of camp, execute move going farther away (we have only found moves which
+                // are either going out of camp or moving father away, hence only moving away moves are present)
+                for (ArrayList<Move> possibleMove : movesForCampPlayers) {
+                    if (possibleMove.size() != 0) {
+                        if (possibleMove.size() == 1) {
+                            allBestMoves.add(new MoveToPlay(possibleMove.get(0)));
+                        } else {
+                            allBestMoves.add(iterativeDeepeningAlphaBeta(possibleMove));
+                            //allBestMoves.add(executeMinMax(0, possibleMove, null, true, 0, 0));
+                        }
                     }
                 }
             }
@@ -319,7 +331,8 @@ public abstract class PlayerImpl implements Player {
         for (int i = 0; i < parentInfo.length; i++) {
             for (int j = 0; j < parentInfo[i].length; j++) {
                 if (null != parentInfo[i][j]) {
-                    jumpingPaths.add(retracePath(parentInfo, startingCell, getCellByCoordinate(new Coordinates(i, j)),
+                    jumpingPaths.add(retracePath(parentInfo, startingCell, Halma
+                                    .getCellByCoordinate(new Coordinates(i, j)),
                             parentInfo[i][j]));
                 }
             }
@@ -357,9 +370,9 @@ public abstract class PlayerImpl implements Player {
      */
     public boolean isFarFromCorner(final Cell corner, final Cell startingCell, final Cell destinationCell) {
         if (isInCamp(startingCell) && isInCamp(destinationCell)) {
-            return Math.abs(destinationCell.getCol() - corner.getCol()) >= Math.abs(
+            return Math.abs(destinationCell.getCol() - corner.getCol()) > Math.abs(
                     startingCell.getCol() - corner.getCol()) && Math.abs(destinationCell.getRow() - corner.getRow())
-                    >= Math.abs(startingCell.getRow() - corner.getRow());
+                    > Math.abs(startingCell.getRow() - corner.getRow());
         }
         return true;
     }
@@ -377,20 +390,20 @@ public abstract class PlayerImpl implements Player {
 
     public MoveToPlay iterativeDeepeningAlphaBeta(ArrayList<Move> moves) {
         MoveToPlay bestMove = new MoveToPlay();
-        //for (int depth = 1; depth <= MAX_DEPTH; depth++) {
-        //    if (System.currentTimeMillis() - START_TIME >= timeRemainingInMillis) {
-        //        try {
-        //            throw new AgentTimeoutException();
-        //        } catch (AgentTimeoutException e) {
-        //            return bestMove;
-        //        }
-        //    }
-        //    MoveToPlay nextMove = alphaBetaSearch(depth, moves);
-        //    if (nextMove.getHeuristic() > bestMove.getHeuristic()) {
-        //        bestMove = nextMove;
-        //    }
-        //}
-        bestMove = alphaBetaSearch(maxDepth, moves);
+        for (int depth = 1; depth <= maxDepth; depth++) {
+            if (System.currentTimeMillis() - homework.START_TIME >= timeRemainingInMillis) {
+                try {
+                    throw new AgentTimeoutException();
+                } catch (AgentTimeoutException e) {
+                    return bestMove;
+                }
+            }
+            MoveToPlay nextMove = alphaBetaSearch(depth, moves);
+            if (nextMove.getHeuristic() > bestMove.getHeuristic()) {
+                bestMove = nextMove;
+            }
+        }
+        //bestMove = alphaBetaSearch(maxDepth, moves);
         return bestMove;
     }
 
@@ -412,10 +425,10 @@ public abstract class PlayerImpl implements Player {
         if (maximizing) {
             int bestScore = Integer.MIN_VALUE;
             for (Move move : moves) {
-                makeMove(move);
+                Halma.makeMove(move);
                 nextMove = executeMinMax(depth - 1, getAvailableMoves(move.getDestinationCell()), move, false, alpha,
                         beta);
-                undoMove(move);
+                Halma.undoMove(move);
                 if (nextMove.getHeuristic() > bestScore) {
                     bestScore = nextMove.getHeuristic();
                     bestMove = new MoveToPlay(move, bestScore);
@@ -429,10 +442,10 @@ public abstract class PlayerImpl implements Player {
         } else {
             int bestScore = Integer.MAX_VALUE;
             for (Move move : moves) {
-                makeMove(move);
+                Halma.makeMove(move);
                 nextMove = executeMinMax(depth - 1, getAvailableMoves(move.getDestinationCell()), move, true, alpha,
                         beta);
-                undoMove(move);
+                Halma.undoMove(move);
                 if (nextMove.getHeuristic() < bestScore) {
                     bestScore = nextMove.getHeuristic();
                     bestMove = new MoveToPlay(move, bestScore);
@@ -454,13 +467,13 @@ public abstract class PlayerImpl implements Player {
         MoveToPlay bestMove = new MoveToPlay();
         //moves.sort(Comparator.comparing(Move::getHeuristic).reversed());
         for (Move move : moves) {
-            makeMove(move);
+            Halma.makeMove(move);
             currentValue = maximizer(depth, move, alpha, beta);
             if (currentValue > alpha) {
                 alpha = currentValue;
                 bestMove = new MoveToPlay(move, currentValue);
             }
-            undoMove(move);
+            Halma.undoMove(move);
         }
         return bestMove;
     }
@@ -470,14 +483,14 @@ public abstract class PlayerImpl implements Player {
         final ArrayList<Move> availableMoves = getAvailableMoves(move.getDestinationCell());
         if (depth == 0 || isGameOver(player) || availableMoves.size() == 0) {
             if (null != move.getDestinationCell()) {
-                return getHeuristicForMove(move);
+                return MoveToPlay.getHeuristicForMove(move);
             }
         }
         int v = Integer.MIN_VALUE;
         for (Move play : availableMoves) {
-            makeMove(play);
+            Halma.makeMove(play);
             v = Math.max(v, minimizer(depth - 1, play, alpha, beta));
-            undoMove(play);
+            Halma.undoMove(play);
             if (v >= beta) { return v; }
             alpha = Math.max(alpha, v);
         }
@@ -489,14 +502,14 @@ public abstract class PlayerImpl implements Player {
         final ArrayList<Move> availableMoves = getAvailableMoves(move.getDestinationCell());
         if (depth == 0 || isGameOver(player) || availableMoves.size() == 0) {
             if (null != move.getDestinationCell()) {
-                return getHeuristicForMove(move);
+                return MoveToPlay.getHeuristicForMove(move);
             }
         }
         int v = Integer.MAX_VALUE;
         for (Move play : availableMoves) {
-            makeMove(play);
+            Halma.makeMove(play);
             v = Math.min(v, maximizer(depth - 1, play, alpha, beta));
-            undoMove(play);
+            Halma.undoMove(play);
             if (v <= alpha) { return v; }
             beta = Math.min(beta, v);
         }

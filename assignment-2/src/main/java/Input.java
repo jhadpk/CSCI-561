@@ -1,10 +1,3 @@
-package com.ai.assignment.entities;
-
-import com.ai.assignment.entities.board.Cell;
-import com.ai.assignment.entities.board.Halma;
-import com.ai.assignment.entities.enums.GameType;
-import com.ai.assignment.entities.enums.PlayerType;
-
 import java.util.ArrayList;
 
 

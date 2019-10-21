@@ -1,9 +1,3 @@
-package com.ai.assignment.entities;
-
-import com.ai.assignment.entities.board.Cell;
-import com.ai.assignment.entities.enums.MoveType;
-
-
 /**
  * @author deepakjha on 10/17/19
  * @project ai-assignments

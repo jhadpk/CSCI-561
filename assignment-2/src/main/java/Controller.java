@@ -1,13 +1,3 @@
-package com.ai.assignment;
-
-import com.ai.assignment.api.GameInitializer;
-import com.ai.assignment.api.Player;
-import com.ai.assignment.entities.Input;
-import com.ai.assignment.entities.Move;
-import com.ai.assignment.entities.Output;
-import com.ai.assignment.entities.board.Cell;
-import com.ai.assignment.entities.enums.MoveType;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -25,6 +15,7 @@ public class Controller {
     private static final String INPUT_FILE = "/Users/deepakjha/input.txt";
     private static final String OUTPUT_FILE = "/Users/deepakjha/output.txt";
     private static final String CALIBRATE_OUTPUT = "/Users/deepakjha/calibration.txt";
+    private static final String PLAYDATA = "/Users/deepakjha/playdata.txt";
 
     private static final String BLANK_SPACE = " ";
     private static final String NEW_LINE = "\n";
@@ -101,14 +92,14 @@ public class Controller {
                 y++;
             }
         }
-        final ArrayList<ArrayList<String>> transposedBoard = transpose(boardConfiguration);
-
-        for (int i=0; i<transposedBoard.size(); i++) {
-            for (int j=0; j<transposedBoard.get(i).size(); j++) {
-                System.out.print(transposedBoard.get(i).get(j)+",");
-            }
-            System.out.println();
-        }
+        //final ArrayList<ArrayList<String>> transposedBoard = transpose(boardConfiguration);
+        //
+        //for (int i=0; i<transposedBoard.size(); i++) {
+        //    for (int j=0; j<transposedBoard.get(i).size(); j++) {
+        //        System.out.print(transposedBoard.get(i).get(j)+",");
+        //    }
+        //    System.out.println();
+        //}
 
         return transpose(boardConfiguration);
     }
@@ -161,10 +152,10 @@ public class Controller {
                                 .append(NEW_LINE));
                     }
                 }
-                System.out.println(output.toString());
+                //System.out.println(output.toString());
                 fw.write(output.substring(0, output.toString().length() - 1));
             } else {
-                System.out.println("No move found");
+                //System.out.println("No move found");
                 fw.write(NO_OUTPUT);
             }
         } catch (IOException e) {

@@ -1,9 +1,3 @@
-package com.ai.assignment.entities.board;
-
-
-import com.ai.assignment.entities.enums.PlayerType;
-
-
 /**
  * @author deepakjha on 10/13/19
  * @project ai-assignments

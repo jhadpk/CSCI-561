@@ -1,6 +1,3 @@
-package com.ai.assignment.entities.enums;
-
-
 /**
  * @author deepakjha on 10/13/19
  * @project ai-assignments
