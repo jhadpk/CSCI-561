@@ -157,23 +157,26 @@ public class Halma {
 
 
     /***
-     * Improve the complexity
+     * TODO : Improve the complexity
      */
-    public static int calculateBoardSituation(final PlayerType playerType) {
+    public static int getBoardSituation(final PlayerType playerType) {
         int heuristic = 0;
+        Coordinates target = Coordinates.getTargetCornerCordinatesByPlayer(playerType);
         for (ArrayList<Cell> row : board) {
             for (Cell tile : row) {
                 if (tile.getPlayerType() == playerType) {
-                    heuristic = heuristic + calculateDistanceFromCorner(playerType, tile);
+                    heuristic = heuristic + calculateDistanceFromCorner(target, tile);
                 }
             }
         }
+        //add number of jumps towards opposition camp possible after move
+        //give more weightage to moves where the farthest cell is moving
+        //creates bridge for further jumps?
         return heuristic;
     }
 
 
-    private static int calculateDistanceFromCorner(final PlayerType playerType, final Cell cell) {
-        final Coordinates goal = playerType == PlayerType.WHITE ? new Coordinates(0, 0) : new Coordinates(15, 15);
-        return 100 - (Math.abs(cell.getRow() - goal.getRow()) + Math.abs(cell.getCol() - goal.getCol()));
+    private static int calculateDistanceFromCorner(final Coordinates target, final Cell cell) {
+        return 100 - (Math.abs(cell.getRow() - target.getRow()) + Math.abs(cell.getCol() - target.getCol()));
     }
 }
