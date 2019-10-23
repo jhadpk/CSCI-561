@@ -1,4 +1,3 @@
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,21 +15,17 @@ public abstract class PlayerImpl implements Player {
     protected Cell BLACK_CORNER_CELL = new Cell(0, 0);
     protected Cell WHITE_CORNER_CELL = new Cell(15, 15);
 
-    private final Input input;
     private final ArrayList<ArrayList<Cell>> board;
     private final double timeRemainingInMillis;
     private final PlayerType player;
     private final int maxDepth;
-    private final boolean isCalibrate;
 
 
     public PlayerImpl(Input input) {
-        this.input = input;
         this.board = input.getBoard();
         this.timeRemainingInMillis = input.getTimeRemainingInSeconds() * 1000;
         this.player = input.getPlayerType();
         this.maxDepth = input.getMaxDepth();
-        this.isCalibrate = false;
     }
 
 
@@ -375,42 +370,18 @@ public abstract class PlayerImpl implements Player {
 
 
     public MoveToPlay iterativeDeepeningSearch(ArrayList<Move> moves) {
-        long startTime = System.currentTimeMillis();
-        long endTime;
-
-
         moves.sort(Comparator.comparing(Move::getHeuristic).reversed());
         MoveToPlay bestMove = new MoveToPlay(moves.get(0));
         try {
             for (int depth = 1; depth <= maxDepth; depth++) {
-
-
-                long startTime1 = System.currentTimeMillis();
                 MoveToPlay nextMove = alphaBetaSearch(depth, moves);
                 if (nextMove.getHeuristic() > bestMove.getHeuristic()) {
                     bestMove = nextMove;
                 }
-
-
-                endTime = System.currentTimeMillis();
-                long elapsd = endTime - startTime1;
-                System.out.println(depth +"," + moves.size() + "," + elapsd + "," + elapsd / moves.size());
             }
         } catch (AgentTimeoutException e) {
-            endTime = System.currentTimeMillis();
-            long elapsd = endTime - startTime;
-            System.out.println(moves.size() + ", Timeout!!" + elapsd + "," + elapsd / moves.size());
-
-
-            System.out.println(elapsd);
             return bestMove;
         }
-        endTime = System.currentTimeMillis();
-        long elapsd = endTime - startTime;
-        System.out.println(moves.size() + "," + elapsd + "," + elapsd / moves.size());
-
-
-        //bestMove = alphaBetaSearch(maxDepth, moves);
         return bestMove;
     }
 
@@ -543,48 +514,5 @@ public abstract class PlayerImpl implements Player {
             }
         }
         return true;
-    }
-
-
-    private int evaluate(final Move move) {
-        int heuristic = 0;
-        //difference of player vs opponent moves after the move.
-        int playerMoveCount = 0;
-        int opponentMoveCount = 0;
-        int playerJumpMoveCount = 0;
-        int opponentJumpMoveCount = 0;
-        for (ArrayList<Cell> row : board) {
-            for (Cell cell : row) {
-                try {
-                    Player player = GameInitializer.getPlayerByType(cell.getPlayerType(), input);
-                    if (player != null) {
-                        if (cell.getPlayerType() == move.getPlayerType()) {
-                            ArrayList<Move> playerMoves = player.getAvailableMoves(cell);
-                            playerMoveCount += playerMoves.size();
-                            for (Move playerMove : playerMoves) {
-                                if (playerMove.getMoveType().equals(MoveType.JUMP)) {
-                                    playerJumpMoveCount += 1;
-                                }
-                            }
-                        } else if (cell.getPlayerType() != move.getPlayerType()
-                                && cell.getPlayerType() != PlayerType.NONE) {
-                            ArrayList<Move> opponentMoves = player.getAvailableMoves(cell);
-                            opponentMoveCount += opponentMoves.size();
-                            for (Move opponentMove : opponentMoves) {
-                                if (opponentMove.getMoveType().equals(MoveType.JUMP)) {
-                                    opponentJumpMoveCount += 1;
-                                }
-                            }
-                        }
-                    }
-                } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }
-        heuristic += (playerMoveCount - opponentMoveCount);
-        //if (isInCamp(move.getStartingCell()) && !isInCamp(move.getDestinationCell())) { heuristic = heuristic + 10; }
-        return heuristic;
     }
 }

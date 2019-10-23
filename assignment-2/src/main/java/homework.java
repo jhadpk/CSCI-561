@@ -8,6 +8,5 @@ public class homework extends Controller {
 
     public static void main(String[] args) {
         new homework().play();
-        System.out.println(System.currentTimeMillis() - START_TIME);
     }
 }
