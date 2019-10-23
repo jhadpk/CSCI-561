@@ -169,6 +169,8 @@ public class Halma {
                 }
             }
         }
+        //find total available moves after this move for self and for opponent.
+        //number of jump moves for self and opponent.
         //add number of jumps towards opposition camp possible after move
         //give more weightage to moves where the farthest cell is moving
         //creates bridge for further jumps?

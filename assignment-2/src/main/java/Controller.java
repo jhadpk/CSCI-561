@@ -12,10 +12,10 @@ import java.util.List;
  * @project ai-assignments
  */
 public class Controller {
-    private static final String INPUT_FILE = "input.txt";
-    private static final String OUTPUT_FILE = "output.txt";
-    private static final String CALIBRATE_OUTPUT = "calibration.txt";
-    private static final String PLAYDATA = "playdata.txt";
+    private static final String INPUT_FILE = "/Users/deepakjha/input.txt";
+    private static final String OUTPUT_FILE = "/Users/deepakjha/output.txt";
+    private static final String CALIBRATE_OUTPUT = "/Users/deepakjha/calibration.txt";
+    private static final String PLAYDATA = "/Users/deepakjha/playdata.txt";
 
     private static final String BLANK_SPACE = " ";
     private static final String NEW_LINE = "\n";
@@ -65,7 +65,7 @@ public class Controller {
             input.setTimeRemainingInSeconds(br.readLine());
             input.setHalma(getBoardConfig(br));
             input.setBoard(input.getHalma().getBoard());
-            input.setMaxDepth(3);
+            input.setMaxDepth(input.getGameType() == GameType.SINGLE ? 5 : 4);
             return input;
         } catch (IOException e) {
             return null;

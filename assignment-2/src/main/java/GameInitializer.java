@@ -42,6 +42,18 @@ public class GameInitializer {
     }
 
 
+    public static Player getPlayerByType(final PlayerType playerType, final Input input)
+            throws ClassNotFoundException, IllegalAccessException, InstantiationException, NoSuchMethodException,
+            InvocationTargetException {
+        String className = getAdapterFor(playerType);
+        if (null != className) {
+            Class<?> adapterClass = Class.forName(className);
+            return (Player) adapterClass.getConstructor(Input.class).newInstance(input);
+        }
+        return null;
+    }
+
+
     private static String getAdapterFor(final PlayerType playerType) {
         return sMap.get(playerType);
     }
