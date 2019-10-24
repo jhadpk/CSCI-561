@@ -66,7 +66,7 @@ public abstract class PlayerImpl implements Player {
             for (Cell cell : playersInCamp) {
                 final ArrayList<Move> availableMoves = getAvailableMoves(cell);
                 if (!availableMoves.isEmpty()) {
-                    movesForCampPlayers.add(getAvailableMoves(cell));
+                    movesForCampPlayers.add(availableMoves);
                 }
             }
         }
@@ -351,9 +351,9 @@ public abstract class PlayerImpl implements Player {
      */
     public boolean isFarFromCorner(final Cell corner, final Cell startingCell, final Cell destinationCell) {
         if (isInCamp(startingCell) && isInCamp(destinationCell)) {
-            return Math.abs(destinationCell.getCol() - corner.getCol()) > Math.abs(
+            return Math.abs(destinationCell.getCol() - corner.getCol()) >= Math.abs(
                     startingCell.getCol() - corner.getCol()) && Math.abs(destinationCell.getRow() - corner.getRow())
-                    > Math.abs(startingCell.getRow() - corner.getRow());
+                    >= Math.abs(startingCell.getRow() - corner.getRow());
         }
         return true;
     }
@@ -361,9 +361,9 @@ public abstract class PlayerImpl implements Player {
 
     public boolean isCloserToCorner(final Cell corner, final Cell startingCell, final Cell destinationCell) {
         if (isInOpposingCamp(startingCell)) {
-            return Math.abs(destinationCell.getCol() - corner.getCol()) < Math.abs(
+            return Math.abs(destinationCell.getCol() - corner.getCol()) <= Math.abs(
                     startingCell.getCol() - corner.getCol()) && Math.abs(destinationCell.getRow() - corner.getRow())
-                    < Math.abs(startingCell.getRow() - corner.getRow());
+                    <= Math.abs(startingCell.getRow() - corner.getRow());
         }
         return true;
     }
