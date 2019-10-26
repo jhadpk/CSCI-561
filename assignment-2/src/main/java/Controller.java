@@ -12,8 +12,9 @@ import java.util.List;
  * @project ai-assignments
  */
 public class Controller {
-    private static final String INPUT_FILE = "/Users/deepakjha/input.txt";
-    private static final String OUTPUT_FILE = "/Users/deepakjha/output.txt";
+    private static final String INPUT_FILE = "input.txt";
+    private static final String OUTPUT_FILE = "output.txt";
+
     private static final String BLANK_SPACE = " ";
     private static final String NEW_LINE = "\n";
     private static final String NO_OUTPUT = "";
@@ -26,13 +27,13 @@ public class Controller {
             if (null != input) {
                 GameInitializer.init();
                 Player adapter = GameInitializer.getPlayer(input);
-                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove()) : null, OUTPUT_FILE);
+                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove()) : null);
             } else {
-                generateOutput(null, OUTPUT_FILE);
+                generateOutput(null);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            generateOutput(null, OUTPUT_FILE);
+            generateOutput(null);
         }
     }
 
@@ -119,10 +120,10 @@ public class Controller {
     }
 
 
-    private void generateOutput(final ArrayList<Output> optimalMoves, String outputFile) {
+    private void generateOutput(final ArrayList<Output> optimalMoves) {
         FileWriter fw = null;
         try {
-            fw = new FileWriter(outputFile, false);
+            fw = new FileWriter(OUTPUT_FILE, false);
             if (null != optimalMoves && optimalMoves.size() != 0) {
                 StringBuilder output = new StringBuilder();
                 for (Output move : optimalMoves) {
@@ -135,7 +136,6 @@ public class Controller {
                 //System.out.println(output.toString());
                 fw.write(output.substring(0, output.toString().length() - 1));
             } else {
-                //System.out.println("No move found");
                 fw.write(NO_OUTPUT);
             }
         } catch (IOException e) {

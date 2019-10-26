@@ -30,6 +30,6 @@ public enum PlayerType {
                 return pt;
             }
         }
-        return null;
+        return NONE;
     }
 }

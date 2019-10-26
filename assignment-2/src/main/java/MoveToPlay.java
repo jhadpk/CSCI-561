@@ -11,14 +11,6 @@ public class MoveToPlay {
         this.heuristic = 0;
     }
 
-    public MoveToPlay(Move move) {
-        Halma.makeMove(move);
-        this.heuristic = Halma.getBoardSituation(move.getPlayerType());
-        this.move = move;
-        Halma.undoMove(move);
-    }
-
-
     public MoveToPlay(Move move, int heuristic) {
         this.move = move;
         this.heuristic = heuristic;
@@ -32,11 +24,5 @@ public class MoveToPlay {
 
     public Move getMove() {
         return this.move;
-    }
-
-
-    public static int getHeuristicForMove(Move move) {
-        //Halma.makeMove is already called before making this call.
-        return Halma.getBoardSituation(move.getPlayerType());
     }
 }

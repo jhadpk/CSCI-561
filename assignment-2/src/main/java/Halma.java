@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -156,29 +157,30 @@ public class Halma {
     }
 
 
-    /***
-     * TODO : Improve the complexity
-     */
-    public static int getBoardSituation(final PlayerType playerType) {
+    public static int evaluateBoard(final PlayerType playerType) {
         int heuristic = 0;
         Coordinates target = Coordinates.getTargetCornerCordinatesByPlayer(playerType);
+        List<String> oppositeCamp = Camp.getOpposingCampCoordinates(playerType);
+
         for (ArrayList<Cell> row : board) {
             for (Cell tile : row) {
                 if (tile.getPlayerType() == playerType) {
-                    heuristic = heuristic + calculateDistanceFromCorner(target, tile);
+                    heuristic = heuristic + evaluateCell(oppositeCamp, target, tile);
                 }
             }
         }
-        //find total available moves after this move for self and for opponent.
-        //number of jump moves for self and opponent.
-        //add number of jumps towards opposition camp possible after move
-        //give more weightage to moves where the farthest cell is moving
-        //creates bridge for further jumps?
         return heuristic;
     }
 
-
-    private static int calculateDistanceFromCorner(final Coordinates target, final Cell cell) {
-        return 100 - (Math.abs(cell.getRow() - target.getRow()) + Math.abs(cell.getCol() - target.getCol()));
+    private static int evaluateCell(List<String> oppositionCamp, final Coordinates target, final Cell cell) {
+        int heuristic = 0;
+        if (oppositionCamp.contains(cell.getRow()+","+cell.getCol())) {
+            heuristic += HeuristicValues.BOARD_WITH_CELL_IN_OPPOSITION_CAMP;
+        }
+        if (Camp.diagonalPath.contains(new Coordinates(cell.getRow(), cell.getCol()))) {
+            heuristic += HeuristicValues.BOARD_WITH_CELL_IN_DIAGONAL_PATH;
+        }
+        heuristic +=  100 - (Math.abs(cell.getRow() - target.getRow()) + Math.abs(cell.getCol() - target.getCol()));
+        return heuristic;
     }
 }

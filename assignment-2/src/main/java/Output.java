@@ -23,6 +23,7 @@ public class Output {
 
     public Cell getDestinationCell() {return this.destinationCell;}
 
+
     public boolean isOutputNotNull() {
         return null != moveType && null != startingCell && null != destinationCell;
     }
