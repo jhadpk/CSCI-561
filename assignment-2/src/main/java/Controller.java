@@ -1,7 +1,10 @@
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,13 +15,18 @@ import java.util.List;
  * @project ai-assignments
  */
 public class Controller {
-    private static final String INPUT_FILE = "input.txt";
-    private static final String OUTPUT_FILE = "output.txt";
+    private static final String INPUT_FILE = "/Users/deepakjha/input.txt";
+    private static final String OUTPUT_FILE = "/Users/deepakjha/output.txt";
 
     private static final String BLANK_SPACE = " ";
     private static final String NEW_LINE = "\n";
     private static final String NO_OUTPUT = "";
 
+    protected void resetPlayground() throws IOException {
+        FileChannel src = new FileInputStream("/Users/deepakjha/Playground.txt").getChannel();
+        FileChannel dest = new FileOutputStream("/Users/deepakjha/input.txt").getChannel();
+        dest.transferFrom(src, 0, src.size());
+    }
 
     protected void play() {
         try {
@@ -27,7 +35,7 @@ public class Controller {
             if (null != input) {
                 GameInitializer.init();
                 Player adapter = GameInitializer.getPlayer(input);
-                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove()) : null);
+                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove(), input.getPlayerType()) : null);
             } else {
                 generateOutput(null);
             }
@@ -46,7 +54,7 @@ public class Controller {
             input.setTimeRemainingInSeconds(br.readLine());
             input.setHalma(getBoardConfig(br));
             input.setBoard(input.getHalma().getBoard());
-            input.setMaxDepth(input.getGameType() == GameType.SINGLE ? 5 : 3);
+            input.setMaxDepth(input.getGameType() == GameType.SINGLE ? 5 : 1);
             return input;
         } catch (IOException e) {
             return null;
@@ -102,7 +110,7 @@ public class Controller {
     }
 
 
-    private ArrayList<Output> generateOutputMoves(final Move optimalMove) {
+    private ArrayList<Output> generateOutputMoves(final Move optimalMove, final PlayerType playerType) {
         if (null == optimalMove) {
             return null;
         }
@@ -116,6 +124,16 @@ public class Controller {
             outputMoves.add(new Output(optimalMove.getMoveType(), optimalMove.getStartingCell(),
                     optimalMove.getDestinationCell()));
         }
+
+
+
+
+
+        Halma.generateNextInput(outputMoves, playerType);
+
+
+
+
         return outputMoves;
     }
 

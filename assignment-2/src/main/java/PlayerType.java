@@ -7,8 +7,8 @@ public enum PlayerType {
     WHITE("W", "WHITE"),
     NONE(".", "NONE");
 
-    private final String player;
-    private final String color;
+    public final String player;
+    public final String color;
 
     PlayerType(String player, String color) {
         this.player = player;
@@ -31,5 +31,9 @@ public enum PlayerType {
             }
         }
         return NONE;
+    }
+
+    public String switchPlayer() {
+        return this.player.equals("W") ? "BLACK" : "WHITE";
     }
 }

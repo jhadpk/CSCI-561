@@ -518,12 +518,25 @@ public abstract class PlayerImpl implements Player {
     }
 
 
+    /***
+     * Heuristic values :
+     * 10 - moving closer to the opposition camp
+     * 20 - moving into opposition camp from outside
+     */
     private int evaluateMove(final Move move) {
         int heuristic = 0;
         Cell startingCell = move.getStartingCell();
         Cell destinationCell = move.getDestinationCell();
 
+
+        //give bonus to moves which provides options for future jumps
+
         if (!isInOpposingCamp(startingCell)) {
+            //if (move.getMoveType().equals(MoveType.JUMP)) {
+            //    heuristic += HeuristicValues.JUMP_MOVE_BONUS * move.getPath().size();
+            //}
+
+
             ArrayList<Cell> availablePositions = Camp.getAvailablePositionsInOpposition(move.getPlayerType());
             for (Cell availableCell : availablePositions) {
                 if (getManhattenDistance(availableCell, startingCell) > getManhattenDistance(availableCell,
@@ -533,9 +546,15 @@ public abstract class PlayerImpl implements Player {
                 }
             }
         }
+
+        //Not giving more points to move within opposition camp
         if (isInOpposingCamp(startingCell) && isInOpposingCamp(destinationCell)) {
             heuristic += HeuristicValues.MOVING_INSIDE_OPPOSITION_CAMP;
         }
+
+
+
+
         if (!isInOpposingCamp(startingCell) && isInOpposingCamp(destinationCell)) {
             heuristic += HeuristicValues.MOVING_INTO_OPPOSITION_CAMP_FROM_OUTSIDE;
         }
