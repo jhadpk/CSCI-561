@@ -54,7 +54,7 @@ public class Controller {
             input.setTimeRemainingInSeconds(br.readLine());
             input.setHalma(getBoardConfig(br));
             input.setBoard(input.getHalma().getBoard());
-            input.setMaxDepth(input.getGameType() == GameType.SINGLE ? 5 : 1);
+            input.setMaxDepth(input.getGameType() == GameType.SINGLE ? 5 : 3);
             return input;
         } catch (IOException e) {
             return null;

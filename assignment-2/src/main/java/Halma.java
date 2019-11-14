@@ -158,7 +158,6 @@ public class Halma {
         }
     }
 
-
     public static int evaluateBoard(final PlayerType playerType) {
         int heuristic = 0;
         Coordinates targetCorner = Coordinates.getTargetCornerCordinatesByPlayer(playerType);
@@ -178,17 +177,34 @@ public class Halma {
     private static int evaluateCell(List<String> oppositionCamp, final Coordinates targetCorner, final Cell cell) {
         int heuristic = 0;
         if (oppositionCamp.contains(cell.getRow() + "," + cell.getCol())) {
-            heuristic += HeuristicValues.BOARD_WITH_CELL_IN_OPPOSITION_CAMP;
+            heuristic += HeuristicValues.CELL_IN_OPPOSITION_CAMP_BONUS;
         }
-
         if (Camp.diagonalPath.contains((cell.getRow() + "," + cell.getCol()))) {
-            heuristic += HeuristicValues.BOARD_WITH_CELL_IN_DIAGONAL_PATH;
+            heuristic += HeuristicValues.CELL_IN_DIAGONAL_PATH_BONUS;
         }
-
-        heuristic += 100 - (Math.abs(cell.getRow() - targetCorner.getRow()) + Math.abs(
-                cell.getCol() - targetCorner.getCol()));
+        heuristic += (30 - (Math.abs(cell.getRow() - targetCorner.getRow()) + Math.abs(
+                cell.getCol() - targetCorner.getCol()))) * 5;
         return heuristic;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
