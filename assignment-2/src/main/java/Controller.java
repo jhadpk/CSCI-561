@@ -22,11 +22,13 @@ public class Controller {
     private static final String NEW_LINE = "\n";
     private static final String NO_OUTPUT = "";
 
+
     protected void resetPlayground() throws IOException {
         FileChannel src = new FileInputStream("/Users/deepakjha/Playground.txt").getChannel();
         FileChannel dest = new FileOutputStream("/Users/deepakjha/input.txt").getChannel();
         dest.transferFrom(src, 0, src.size());
     }
+
 
     protected void play() {
         try {
@@ -35,7 +37,8 @@ public class Controller {
             if (null != input) {
                 GameInitializer.init();
                 Player adapter = GameInitializer.getPlayer(input);
-                generateOutput(null != adapter ? generateOutputMoves(adapter.getNextMove(), input.getPlayerType()) : null);
+                generateOutput(
+                        null != adapter ? generateOutputMoves(adapter.getNextMove(), input.getPlayerType()) : null);
             } else {
                 generateOutput(null);
             }
@@ -54,7 +57,9 @@ public class Controller {
             input.setTimeRemainingInSeconds(br.readLine());
             input.setHalma(getBoardConfig(br));
             input.setBoard(input.getHalma().getBoard());
-            input.setMaxDepth(input.getGameType() == GameType.SINGLE ? 5 : 3);
+            int depthForGame =
+                    input.getTimeRemainingInSeconds() > 100 ? 3 : input.getTimeRemainingInSeconds() > 50 ? 2 : 1;
+            input.setMaxDepth(input.getGameType() == GameType.SINGLE ? 3 : depthForGame);
             return input;
         } catch (IOException e) {
             return null;
@@ -126,12 +131,7 @@ public class Controller {
         }
 
 
-
-
-
         Halma.generateNextInput(outputMoves, playerType);
-
-
 
 
         return outputMoves;
