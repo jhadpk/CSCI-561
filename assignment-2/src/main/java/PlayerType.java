@@ -32,8 +32,4 @@ public enum PlayerType {
         }
         return NONE;
     }
-
-    public String switchPlayer() {
-        return this.player.equals("W") ? "BLACK" : "WHITE";
-    }
 }

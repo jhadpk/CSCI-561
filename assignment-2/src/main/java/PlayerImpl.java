@@ -538,123 +538,6 @@ public abstract class PlayerImpl implements Player {
         Cell startingCell = move.getStartingCell();
         Cell destinationCell = move.getDestinationCell();
 
-
-        //give bonus to moves which provides options for future jumps
-        //int bridgeBonus = 0;
-        //if (move.getPlayerType() == PlayerType.WHITE) {
-        //    if (null != destinationCell.getRight() && null != destinationCell.getLeft()
-        //            && destinationCell.getRight().getPlayerType() == PlayerType.WHITE
-        //            && destinationCell.getLeft().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //    if (null != destinationCell.getBottom() && null != destinationCell.getTop()
-        //            && destinationCell.getBottom().getPlayerType() == PlayerType.WHITE
-        //            && destinationCell.getTop().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //
-        //    if (null != destinationCell.getBottomRight() && null != destinationCell.getTopLeft()
-        //            && destinationCell.getBottomRight().getPlayerType() == PlayerType.WHITE
-        //            && destinationCell.getTopLeft().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //    if (null != destinationCell.getBottomLeft() && null != destinationCell.getTopRight()
-        //            && destinationCell.getBottomLeft().getPlayerType() == PlayerType.WHITE
-        //            && destinationCell.getTopRight().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //    if (null != destinationCell.getTopRight() && null != destinationCell.getBottomLeft()
-        //            && destinationCell.getTopRight().getPlayerType() == PlayerType.WHITE
-        //            && destinationCell.getBottomLeft().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //    //if (null != destinationCell.getRight() && null != destinationCell.getLeft()
-        //    //        && destinationCell.getRight().getPlayerType() == PlayerType.WHITE
-        //    //        && destinationCell.getLeft().getPlayerType() == PlayerType.NONE
-        //    //        || null != destinationCell.getBottom() && null != destinationCell.getTop()
-        //    //        && destinationCell.getBottom().getPlayerType() == PlayerType.WHITE
-        //    //        && destinationCell.getTop().getPlayerType() == PlayerType.NONE
-        //    //        || null != destinationCell.getBottomRight() && null != destinationCell.getTopLeft()
-        //    //        && destinationCell.getBottomRight().getPlayerType() == PlayerType.WHITE
-        //    //        && destinationCell.getTopLeft().getPlayerType() == PlayerType.NONE
-        //    //        || null != destinationCell.getBottomLeft() && null != destinationCell.getTopRight()
-        //    //        && destinationCell.getBottomLeft().getPlayerType() == PlayerType.WHITE
-        //    //        && destinationCell.getTopRight().getPlayerType() == PlayerType.NONE
-        //    //        || null != destinationCell.getTopRight() && null != destinationCell.getBottomLeft()
-        //    //        && destinationCell.getTopRight().getPlayerType() == PlayerType.WHITE
-        //    //        && destinationCell.getBottomLeft().getPlayerType() == PlayerType.NONE) {
-        //    //    //future jumps
-        //    //    heuristic += HeuristicValues.FUTURE_JUMP_MOVE_BONUS;
-        //    //}
-        //    heuristic += bridgeBonus;
-        //} else if (move.getPlayerType() == PlayerType.BLACK) {
-        //    if (null != destinationCell.getLeft() && null != destinationCell.getRight()
-        //            && destinationCell.getLeft().getPlayerType() == PlayerType.BLACK
-        //            && destinationCell.getRight().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //    if (null != destinationCell.getTop() && null != destinationCell.getBottom()
-        //            && destinationCell.getTop().getPlayerType() == PlayerType.BLACK
-        //            && destinationCell.getBottom().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //    if (null != destinationCell.getTopLeft() && null != destinationCell.getBottomRight()
-        //            && destinationCell.getTopLeft().getPlayerType() == PlayerType.BLACK
-        //            && destinationCell.getBottomRight().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //    if (null != destinationCell.getBottomLeft() && null != destinationCell.getTopRight()
-        //            && destinationCell.getBottomLeft().getPlayerType() == PlayerType.BLACK
-        //            && destinationCell.getTopRight().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //    if (null != destinationCell.getTopRight() && null != destinationCell.getBottomLeft()
-        //            && destinationCell.getTopRight().getPlayerType() == PlayerType.BLACK
-        //            && destinationCell.getBottomLeft().getPlayerType() == PlayerType.NONE) {
-        //        bridgeBonus += 10;
-        //    }
-        //    //if (null != destinationCell.getLeft() && null != destinationCell.getRight()
-        //    //        && destinationCell.getLeft().getPlayerType() == PlayerType.BLACK
-        //    //        && destinationCell.getRight().getPlayerType() == PlayerType.NONE
-        //    //        || null != destinationCell.getTop() && null != destinationCell.getBottom()
-        //    //        && destinationCell.getTop().getPlayerType() == PlayerType.BLACK
-        //    //        && destinationCell.getBottom().getPlayerType() == PlayerType.NONE
-        //    //        || null != destinationCell.getTopLeft() && null != destinationCell.getBottomRight()
-        //    //        && destinationCell.getTopLeft().getPlayerType() == PlayerType.BLACK
-        //    //        && destinationCell.getBottomRight().getPlayerType() == PlayerType.NONE
-        //    //        || null != destinationCell.getBottomLeft() && null != destinationCell.getTopRight()
-        //    //        && destinationCell.getBottomLeft().getPlayerType() == PlayerType.BLACK
-        //    //        && destinationCell.getTopRight().getPlayerType() == PlayerType.NONE
-        //    //        || null != destinationCell.getTopRight() && null != destinationCell.getBottomLeft()
-        //    //        && destinationCell.getTopRight().getPlayerType() == PlayerType.BLACK
-        //    //        && destinationCell.getBottomLeft().getPlayerType() == PlayerType.NONE) {
-        //    //    //future jumps
-        //    //    heuristic += HeuristicValues.FUTURE_JUMP_MOVE_BONUS;
-        //    //}
-        //    heuristic += bridgeBonus;
-        //}
-
-
-
-        //Coordinates targetCorner = Coordinates.getTargetCornerCordinatesByPlayer(move.getPlayerType());
-        //List<String> oppositionCamp = Camp.getOpposingCampCoordinates(move.getPlayerType());
-        //if (oppositionCamp.contains(destinationCell.getRow() + "," + destinationCell.getCol())) {
-        //    heuristic += HeuristicValues.CELL_IN_OPPOSITION_CAMP_BONUS;
-        //}
-        //if (Camp.diagonalPath.contains((destinationCell.getRow() + "," + destinationCell.getCol()))) {
-        //    heuristic += HeuristicValues.CELL_IN_DIAGONAL_PATH_BONUS;
-        //}
-        //heuristic += (30 - (Math.abs(destinationCell.getRow() - targetCorner.getRow()) + Math.abs(
-        //        destinationCell.getCol() - targetCorner.getCol()))) * 5;
-
-
-
-
-
-
-
-
-
         if (move.getPlayerType() == PlayerType.WHITE) {
             if (startingCell.getRow() > destinationCell.getRow()) {
                 heuristic += HeuristicValues.VERTICAL_MOVE_BONUS;
@@ -671,12 +554,6 @@ public abstract class PlayerImpl implements Player {
             }
         }
 
-        //if (!isInOpposingCamp(startingCell)) {
-        //if (move.getMoveType().equals(MoveType.JUMP)) {
-        //    heuristic += HeuristicValues.JUMP_MOVE_BONUS * move.getPath().size();
-        //}
-
-
         ArrayList<Cell> availablePositions = Camp.getAvailablePositionsInOpposition(move.getPlayerType());
         for (Cell availableCell : availablePositions) {
             if (getManhattenDistance(availableCell, startingCell) > getManhattenDistance(availableCell,
@@ -685,18 +562,14 @@ public abstract class PlayerImpl implements Player {
                 break;
             }
         }
-        //}
-
-        //heuristic += 10 * getAvailableMoves(destinationCell).size();
 
         if (isInOpposingCamp(startingCell) && isInOpposingCamp(destinationCell)) {
             heuristic += HeuristicValues.MOVING_INSIDE_OPPOSITION_CAMP;
         }
-
         if (!isInOpposingCamp(startingCell) && isInOpposingCamp(destinationCell)) {
             heuristic += HeuristicValues.MOVING_INTO_OPPOSITION_CAMP_FROM_OUTSIDE;
         }
-        heuristic = heuristic / depth;
-        return heuristic;
+
+        return heuristic / depth;
     }
 }
