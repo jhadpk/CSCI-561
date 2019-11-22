@@ -26,7 +26,12 @@ public class Controller {
                 ArrayList<Boolean> results = new ArrayList<>();
                 ResolutionEngine resolutionEngine = new ResolutionEngine(kb.getKbMap(), kb.getClauseSet());
                 for (String query : input.getQueries()) {
+                    boolean result = resolutionEngine.resolve(query, 500);
                     results.add(resolutionEngine.resolve(query));
+                    if (result) {
+                        kb.getClauseSet().add(query);
+                        kb.addToKbMap(query.split("\\(")[0], query);
+                    }
                 }
                 writeOutput(results);
             }
