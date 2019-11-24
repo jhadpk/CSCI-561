@@ -25,13 +25,14 @@ public class Controller {
                 new CNFConverter(kb).convertToCnfAndPopulateKb(input.getSentencesInKb());
                 ArrayList<Boolean> results = new ArrayList<>();
                 for (String query : input.getQueries()) {
-                    boolean result = new ResolutionEngine(kb.getKbMap(), kb.getClauseSet()).resolve(query);
+                    boolean result = new ResolutionEngine(kb.getKbMap()).resolve(query.trim());
                     results.add(result);
                     if (result) {
                         kb.getClauseSet().add(query);
                         kb.addToKbMap(query.split("\\(")[0], query);
                     }
                 }
+                //System.out.println(results);
                 writeOutput(results);
             }
         } catch (Exception e) {

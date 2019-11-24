@@ -1,0 +1,104 @@
+1
+Take(Alice,NSAIDs)
+2
+Take(x,Warfarin) => ~Take(x,NSAIDs)
+Take(Alice,Warfarin)
+
+False
+
+
+
+
+
+2
+Alert(Bob,NSAIDs)
+Alert(Bob,VitC)
+5
+Take(x,Warfarin) => ~Take(x,NSAIDs)
+HighBP(x) => Alert(x,NSAIDs)
+Take(Bob,Antacids)
+Take(Bob,VitA)
+HighBP(Bob)
+
+TRUE
+FALSE
+
+
+
+3
+Alert(Alice,VitE)
+Alert(Bob,VitE)
+Alert(John,VitE)
+9
+Migraine(x) & HighBP(x) => Take(x,Timolol)
+Take(x,Warfarin) & Take(x,Timolol) => Alert(x,VitE)
+Migraine(Alice)
+Migraine(Bob)
+HighBP(Bob)
+OldAge(John)
+HighBP(John)
+Take(John,Timolol)
+Take(Bob,Warfarin)
+
+FALSE
+TRUE
+FALSE
+
+
+
+1
+Parent(Art,Jon)
+3
+Father(Art, Jon)
+Father(Bob, Kim)
+Father(x,y) => Parent(x,y)
+
+TRUE
+
+
+
+
+1
+Eats(Jo, Fish)
+3
+~Cat(x)|Likes(x,Fish)
+~Cat(x)|~Likes(x,y)|Eats(x,y)
+Cat(Jo)
+
+TRUE
+
+
+
+
+
+
+1
+Criminal(West)
+8
+~American(x) | ~Weapon(y) | ~Sells(x, y, z) | ~Hostile(z) | Criminal(x)
+~Missile(x) | ~Owns(Nono, x) | Sells(West, x, Nono)
+~Enemy (x, America ) | Hostile (x)
+~Missile(x) | Weapon(x)
+Owns (Nono , M1 )
+Missile (M1 )
+American(West)
+Enemy(Nono,America)
+
+TRUE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
