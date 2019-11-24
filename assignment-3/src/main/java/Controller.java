@@ -24,10 +24,9 @@ public class Controller {
             if (null != input) {
                 new CNFConverter(kb).convertToCnfAndPopulateKb(input.getSentencesInKb());
                 ArrayList<Boolean> results = new ArrayList<>();
-                ResolutionEngine resolutionEngine = new ResolutionEngine(kb.getKbMap(), kb.getClauseSet());
                 for (String query : input.getQueries()) {
-                    boolean result = resolutionEngine.resolve(query, 500);
-                    results.add(resolutionEngine.resolve(query));
+                    boolean result = new ResolutionEngine(kb.getKbMap(), kb.getClauseSet()).resolve(query);
+                    results.add(result);
                     if (result) {
                         kb.getClauseSet().add(query);
                         kb.addToKbMap(query.split("\\(")[0], query);

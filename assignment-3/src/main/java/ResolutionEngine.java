@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +14,7 @@ import java.util.Set;
 public class ResolutionEngine {
     private final HashMap<String, Set<String>> kbMap;
     private final Set<String> clauseSet;
-    private final HashMap<String, Set<String>> kbMapCopy;
+    private HashMap<String, Set<String>> kbMapCopy;
     private final List<String> clauseSetCopy;
 
 
@@ -21,127 +22,100 @@ public class ResolutionEngine {
         this.kbMap = kbMap;
         this.clauseSet = clauseSet;
         this.clauseSetCopy = new ArrayList<>(clauseSet);
-        this.kbMapCopy = new HashMap<>(kbMap);
+        kbMapCopy = deepcopy(kbMap);
     }
+
+
+    private HashMap<String, Set<String>> deepcopy(HashMap<String, Set<String>> kbMap) {
+        HashMap<String, Set<String>> kbMapCopy = new HashMap<>();
+        for (Map.Entry<String, Set<String>> entry : kbMap.entrySet()) {
+            kbMapCopy.put(entry.getKey(), new HashSet<>(entry.getValue()));
+        }
+        return kbMapCopy;
+    }
+
 
     public boolean resolve(String query) {
         String negatedQuery = negateQuery(query);
+        String predicate = getPredicate(negatedQuery);
+        Set<String> value = new HashSet<>();
+        value.add(negatedQuery);
+        if (null != kbMapCopy.get(predicate)) {
+            kbMapCopy.get(predicate).add(negatedQuery);
+        } else {
+            kbMapCopy.put(predicate, value);
+        }
         return resolve(negatedQuery, 500);
     }
 
+
+    // A | B , ~B | C  => A | C
     public boolean resolve(String query, int threshold) {
-
-
-        // A | B , ~B | C  => A | C
-
-
         threshold--;
         if (threshold == 0) {
             return false;
         }
+        List<String> queryClauses = getClauses(query);
+        for (String queryClause : queryClauses) {
+            String queryPredicate = getPredicate(negateQuery(queryClause));
+            List<String> queryArguments = getArguments(queryClause);
+            Set<String> matchingKbRules = kbMapCopy.get(queryPredicate);
+            if (null != matchingKbRules) {
+                for (String rule : matchingKbRules) {
+                    String newKnowledge = "";
 
+                    List<String> clauses = getClauses(rule);
+                    boolean partialResolved = false;
 
-        List<String> queryClauses = Arrays.asList(query.split("\\|"));
-        if (queryClauses.size() == 1) {
-
-        } else {
-            for (String clause : queryClauses) {
-                String queryPredicate = getPredicate(negateQuery(clause));
-                List<String> queryArguments = getArguments(query);
-                Set<String> matchingKbRules = kbMapCopy.get(queryPredicate);
-                if (null != matchingKbRules) {
-    
-                }
-
-
-
-
-            }
-        }
-
-
-        String queryPredicate = getPredicate(query);
-        List<String> queryArguments = getArguments(query);
-        //clauseList.add(0, negatedQuery);
-
-        Set<String> matchingKbRules = kbMapCopy.get(queryPredicate);
-        if (null != matchingKbRules) {
-            for (String rule : matchingKbRules) {
-                String updatedRule = rule;
-                List<String> clauses = getClauses(rule);
-                for (String clause : clauses) {
-                    Map<String, String> theta = new HashMap<>();
-                    final String clausePredicate = getPredicate(clause);
-                    boolean unified = false;
-                    List<String> argsInClause = getArguments(clause);
-                    if (clausePredicate.equals(queryPredicate)) {
-                        if (queryArguments.size() == argsInClause.size()) {
-                            for (int i = 0; i < queryArguments.size(); i++) {
-                                theta = unify(queryArguments.get(i), argsInClause.get(i), theta);
-                                if (null == theta) {
-                                    unified = false;
-                                    break;
-                                } else {
-                                    unified = true;
-                                    //if (theta.containsKey(queryArguments.get(i))) {
-                                    //    //queryArguments.set(i, theta.get(queryArguments.get(i)));
-                                    //    rule = rule.replaceAll(queryArguments.get(i),theta.get(queryArguments.get(i)));
-                                    //} else if (theta.containsKey(argsInClause.get(i))) {
-                                    //    //argsInClause.set(i, theta.get(argsInClause.get(i)));
-                                    //    rule = rule.replaceAll(argsInClause.get(i),theta.get(argsInClause.get(i)));
-                                    //}
+                    for (String clause : clauses) {
+                        Map<String, String> theta = new HashMap<>();
+                        final String clausePredicate = getPredicate(clause);
+                        boolean unified = false;
+                        List<String> clauseArguments = getArguments(clause);
+                        if (clausePredicate.equals(queryPredicate)) {
+                            if (queryArguments.size() == clauseArguments.size()) {
+                                for (int i = 0; i < queryArguments.size(); i++) {
+                                    theta = unify(queryArguments.get(i), clauseArguments.get(i), theta);
+                                    if (null == theta) {
+                                        unified = false;
+                                        break;
+                                    } else {
+                                        unified = true;
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (unified) {
-                        List<String> updatedClauses = new ArrayList<>(clauses);
-                        updatedClauses.remove(clause);
-                        updatedRule = String.join("|", updatedClauses);
+                        if (unified) {
+                            List<String> updatedQueryClauses = new ArrayList<>(queryClauses);
+                            updatedQueryClauses.remove(queryClause);
+                            String updatedQuery = String.join("|", updatedQueryClauses);
 
-                        for (String var : theta.keySet()) {
-                            updatedRule = updatedRule.replaceAll(var, theta.get(var));
-                        }
-                        //clauseSetCopy.remove(rule);
-                        //clauseSetCopy.add(updatedRule);
+                            List<String> updatedClauses = new ArrayList<>(clauses);
+                            updatedClauses.remove(clause);
+                            String updatedRule = String.join("|", updatedClauses);
 
-                        for (String c : getClauses(rule)) {
-                            final String p = getPredicate(c);
-                            kbMapCopy.get(p).remove(rule);
-                            if (containsPredicate(updatedRule, p)) {
-                                kbMapCopy.get(getPredicate(c)).add(updatedRule);
+                            for (String var : theta.keySet()) {
+                                updatedQuery = updatedQuery.replaceAll(var, theta.get(var));
+                                updatedRule = updatedRule.replaceAll(var, theta.get(var));
                             }
+                            newKnowledge = binaryResolve(updatedQuery, updatedRule);
+                            updateKb(query, newKnowledge);
+                            updateKb(rule, newKnowledge);
+                            partialResolved = true;
+                            break;
                         }
-                        //kbMapCopy.get(queryPredicate).remove(rule);
-                        //kbMapCopy.get(queryPredicate).add(updatedRule);
-                        break;
                     }
-                }
-                if (updatedRule.isEmpty()) {
-                    return true;
-                }
-                if (!updatedRule.equals(rule)) {
-                    List<String> queries = Arrays.asList(updatedRule.split("\\|"));
-
-
-
-
-
-
-                    if (queries.size() == 1) {
-                        return resolve(negateQuery(queries.get(0)), threshold);
-                    } else {
-                        boolean resolution = true;
-                        for (String newQuery : queries) {
-                            resolution = resolution && resolve(negateQuery(newQuery), threshold);
-                        }
-                        return resolution;
+                    if (partialResolved && newKnowledge.isEmpty()) {
+                        return true;
+                    } else if (!newKnowledge.isEmpty()) {
+                        return resolve(newKnowledge, threshold);
                     }
                 }
             }
         }
         return false;
     }
+
 
     private boolean containsPredicate(String rule, String predicate) {
         List<String> clauses = getClauses(rule);
@@ -153,17 +127,21 @@ public class ResolutionEngine {
         return false;
     }
 
+
     private List<String> getClauses(final String clause) {
         return Arrays.asList(clause.split("\\|"));
     }
+
 
     private String getPredicate(final String query) {
         return query.split("\\(")[0];
     }
 
+
     private List<String> getArguments(final String query) {
         return Arrays.asList(query.split("\\(")[1].split("\\)")[0].split(","));
     }
+
 
     private Map<String, String> unify(String x, String y, Map<String, String> theta) {
         if (theta == null) {
@@ -200,19 +178,22 @@ public class ResolutionEngine {
         return var.charAt(0) >= 96 && var.charAt(0) <= 122;
     }
 
+
     private boolean isConstant(String var) {
         return var.charAt(0) >= 65 && var.charAt(0) <= 90 && !var.contains("(") && !var.contains(")");
     }
+
 
     private boolean isCompound(String var) {
         return !isConstant(var) && !isVariable(var);
     }
 
+
     private static String negateQuery(String query) {
         if (query.startsWith("~")) {
             query = query.substring(1);
             if (query.startsWith("(") && query.endsWith(")")) {
-                return query.substring(1, query.length()-1);
+                return query.substring(1, query.length() - 1);
             }
             return query;
         } else {
@@ -242,5 +223,28 @@ public class ResolutionEngine {
         //        }
         //    }
         //}
+    }
+
+
+    private void updateKb(final String rule, final String newKnowledge) {
+        for (String c : getClauses(rule)) {
+            final String p = getPredicate(c);
+            kbMapCopy.get(p).remove(rule);
+            if (containsPredicate(newKnowledge, p)) {
+                kbMapCopy.get(p).add(newKnowledge);
+            }
+
+        }
+    }
+
+
+    private String binaryResolve(String s1, String s2) {
+        if (!s1.isEmpty() && !s2.isEmpty()) {
+            return s1 + "|" + s2;
+        } else if (s1.isEmpty()) {
+            return s2;
+        } else {
+            return s1;
+        }
     }
 }
