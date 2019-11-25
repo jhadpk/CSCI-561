@@ -31,11 +31,11 @@ public class ResolutionEngine {
         } else {
             kbMapCopy.put(predicate, value);
         }
-        return resolve(negatedQuery, 500);
+        return resolve(negatedQuery, 5000, false);
     }
 
 
-    public boolean resolve(String query, int threshold) {
+    public boolean resolve(String query, int threshold, boolean resolved) {
         threshold--;
         if (threshold == 0) {
             return false;
@@ -48,10 +48,8 @@ public class ResolutionEngine {
             if (null != matchingKbRules) {
                 for (String rule : matchingKbRules) {
                     String newKnowledge = "";
-
                     final List<String> clauses = getClauses(rule);
                     boolean partialResolved = false;
-
                     for (String clause : clauses) {
                         Map<String, String> theta = new HashMap<>();
                         final String clausePredicate = getPredicate(clause);
@@ -78,8 +76,6 @@ public class ResolutionEngine {
                                 updatedRule = updatedRule.replaceAll(var, theta.get(var));
                             }
                             newKnowledge = binaryResolve(updatedQuery, updatedRule);
-                            //updateKb(query, newKnowledge);
-                            //updateKb(rule, newKnowledge);
                             partialResolved = true;
                             break;
                         }
@@ -87,24 +83,13 @@ public class ResolutionEngine {
                     if (partialResolved && newKnowledge.isEmpty()) {
                         return true;
                     } else if (!newKnowledge.isEmpty()) {
-                        //System.out.println("Resolving : " + newKnowledge);
-                        return resolve(newKnowledge, threshold);
+                        System.out.println("Resolving : " + newKnowledge);
+                        resolved = resolved || resolve(newKnowledge, threshold, false);
                     }
                 }
             }
         }
-        return false;
-    }
-
-
-    private boolean containsPredicate(String rule, String predicate) {
-        List<String> clauses = getClauses(rule);
-        for (String clause : clauses) {
-            if (getPredicate(clause).equals(predicate)) {
-                return true;
-            }
-        }
-        return false;
+        return resolved;
     }
 
 
@@ -197,19 +182,6 @@ public class ResolutionEngine {
             kbMapCopy.put(entry.getKey(), new HashSet<>(entry.getValue()));
         }
         return kbMapCopy;
-    }
-
-
-    @Deprecated
-    private void updateKb(final String rule, final String newKnowledge) {
-        for (String c : getClauses(rule)) {
-            final String p = getPredicate(c);
-            kbMapCopy.get(p).remove(rule);
-            if (containsPredicate(newKnowledge, p)) {
-                kbMapCopy.get(p).add(newKnowledge);
-            }
-
-        }
     }
 
 
