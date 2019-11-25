@@ -31,7 +31,7 @@ public class ResolutionEngine {
         } else {
             kbMapCopy.put(predicate, value);
         }
-        return resolve(negatedQuery, 5000, false);
+        return resolve(negatedQuery, 500, false);
     }
 
 
@@ -83,7 +83,10 @@ public class ResolutionEngine {
                     if (partialResolved && newKnowledge.isEmpty()) {
                         return true;
                     } else if (!newKnowledge.isEmpty()) {
-                        System.out.println("Resolving : " + newKnowledge);
+                        //System.out.println("Resolved : " + query + " with : " + rule);
+                        //System.out.println("Now Resolving : " + newKnowledge);
+                        //System.out.println("\n");
+
                         resolved = resolved || resolve(newKnowledge, threshold, false);
                     }
                 }
@@ -107,9 +110,23 @@ public class ResolutionEngine {
     }
 
 
-    private List<String> getArguments(final String query) {
+    private List<String> getArguments(String query) {
         List<String> arguments = new ArrayList<>();
-        for (String a : query.split("\\(")[1].trim().split("\\)")[0].trim().split(",")) {
+
+        int opened = 0;
+        int start = -1;
+        for (int i = 0; i < query.length(); i++) {
+            if (query.charAt(i) == '(') {
+                opened++;
+                if (opened == 1) {
+                    start = i;
+                }
+            }
+        }
+
+        query = query.substring(start + 1, query.length() - 1);
+
+        for (String a : query.trim().split(",")) {
             arguments.add(a.trim());
         }
         return arguments;
@@ -121,6 +138,7 @@ public class ResolutionEngine {
         updatedClauses.remove(clause);
         return String.join("|", updatedClauses);
     }
+
 
     private Map<String, String> unify(String x, String y, Map<String, String> theta) {
         if (theta == null) {
@@ -134,6 +152,40 @@ public class ResolutionEngine {
             return unifyVar(x, y, theta);
         } else if (isVariable(y)) {
             return unifyVar(y, x, theta);
+        } else if (isCompound(x) && isCompound(y)) {
+            return unify(getArguments(x), getArguments(y), unifyOps(getPredicate(x), getPredicate(y), theta));
+        } else if (isConstant(x) && isCompound(y)) {
+            theta.put(y, x);
+            return theta;
+        } else if (isCompound(x) && isConstant(y)) {
+            theta.put(x, y);
+            return theta;
+        } else {
+            return null;
+        }
+    }
+
+
+    public Map<String, String> unify(List<String> x, List<String> y, Map<String, String> theta) {
+        if (theta == null) {
+            return null;
+        } else if (x.size() != y.size()) {
+            return null;
+        } else if (x.size() == 0) {
+            return theta;
+        } else if (x.size() == 1) {
+            return unify(x.get(0), y.get(0), theta);
+        } else {
+            return unify(x.subList(1, x.size()), y.subList(1, y.size()), unify(x.get(0), y.get(0), theta));
+        }
+    }
+
+
+    private Map<String, String> unifyOps(String x, String y, Map<String, String> theta) {
+        if (theta == null) {
+            return null;
+        } else if (x.equals(y)) {
+            return theta;
         } else {
             return null;
         }
@@ -141,7 +193,15 @@ public class ResolutionEngine {
 
 
     private Map<String, String> unifyVar(String var, String x, Map<String, String> theta) {
-        if (!isConstant(x)) {
+        if (isCompound(x)) {
+            String argument = getArguments(x).get(0);
+            if (isConstant(argument)) {
+                theta.put(var, x);
+                return theta;
+            } else {
+                return unify(var, getArguments(x).get(0), theta);
+            }
+        } else if (!isConstant(x)) {
             return null;
         } else if (theta.containsKey(var)) {
             return unify(theta.get(var), x, theta);
@@ -151,6 +211,11 @@ public class ResolutionEngine {
             theta.put(var, x);
             return theta;
         }
+    }
+
+
+    private boolean isCompound(String var) {
+        return !isConstant(var) && !isVariable(var);
     }
 
 
@@ -175,6 +240,7 @@ public class ResolutionEngine {
             return "~" + query;
         }
     }
+
 
     private HashMap<String, Set<String>> deepcopy(HashMap<String, Set<String>> kbMap) {
         HashMap<String, Set<String>> kbMapCopy = new HashMap<>();

@@ -12,9 +12,11 @@ public class CNFConverter {
     private List<HashMap<String, String>> predicateMapList = new ArrayList<>();
     private final KnowledgeBase kb;
 
+
     public CNFConverter(final KnowledgeBase kb) {
         this.kb = kb;
     }
+
 
     public void convertToCnfAndPopulateKb(final ArrayList<String> inputSentences) {
         for (int i = 0; i < inputSentences.size(); i++) {
@@ -39,17 +41,26 @@ public class CNFConverter {
         HashMap<String, String> pMap = new HashMap<>();
         int end = 0;
         for (int i = 0; i < sentence.length(); i++) {
+            int opened = -1;
             if (sentence.charAt(i) >= 65 && sentence.charAt(i) <= 90) {
                 int j = i;
-                while (sentence.charAt(j) != ')') {
+
+                while (opened != 0) {
                     if (sentence.charAt(j) == '(') {
-                        end = j;
+                        opened++;
+                        if (opened == 0) {
+                            opened = 1;
+                            end = j;
+                        }
+                    }
+                    if (sentence.charAt(j) == ')') {
+                        opened--;
                     }
                     j++;
                 }
 
                 String predicate = sentence.substring(i, end);
-                String value = sentence.substring(i, j + 1);
+                String value = sentence.substring(i, j);
                 String append = "";
                 while (pMap.get(predicate) != null) {
                     if (pMap.get(predicate).equals(value)) {
@@ -61,8 +72,8 @@ public class CNFConverter {
                 }
                 pMap.put(predicate, value);
                 pMap.put("~" + predicate, "~" + value);
-                sentence = sentence.substring(0, end) + append + sentence.substring(j + 1);
-                i = end;
+                sentence = sentence.substring(0, end) + append + sentence.substring(j);
+                i = end - 1;
             }
         }
         predicateMapList.add(pMap);
@@ -297,43 +308,68 @@ public class CNFConverter {
     }
 
 
-    private String standardiseVariables(String clause, int index) {
-        int startIndex = -1;
-        boolean isVariable = false;
-        for (int i = 0; i < clause.length(); i++) {
-            if (clause.charAt(i) == '(') {
-                startIndex = i + 1;
-                isVariable = true;
-            } else if (clause.charAt(i) == ')') {
-                if (isVariable) {
-                    int j = startIndex - 1;
-                    while (j <= i) {
-                        if (clause.charAt(j) == ',' || clause.charAt(j) == ')') {
-                            if (clause.charAt(j) == ')') {
-                                isVariable = false;
-                            }
-                            int varStartIndex = j - 1;
-                            while (varStartIndex >= 0) {
-                                if (clause.charAt(varStartIndex) == ',' || clause.charAt(varStartIndex) == '(') {
-                                    break;
-                                }
-                                varStartIndex--;
-                            }
-                            if (clause.charAt(varStartIndex + 1) >= 96 && clause.charAt(varStartIndex + 1) <= 122) {
-                                clause = clause.substring(0, j) + index + clause.substring(j);
-                                j++;
-                                i++;
-                            }
-                        }
-                        j++;
-                    }
-
+    private String standardiseVariables(String rule, int index) {
+        for (int i = 0; i < rule.length(); i++) {
+            if (rule.charAt(i) == '(') {
+                if (rule.charAt(i+1) >= 96 && rule.charAt(i+1) <= 122) {
+                    rule = rule.substring(0, i + 2) + index + rule.substring(i+2);
                 }
-            } else if (clause.charAt(i) == '|') {
-                isVariable = false;
+            }
+            if (rule.charAt(i) == ',') {
+                if (rule.charAt(i+1) >= 96 && rule.charAt(i+1) <= 122) {
+                    rule = rule.substring(0, i + 2) + index + rule.substring(i+2);
+                }
             }
         }
-        return clause;
+
+
+
+        //int startIndex = -1;
+        //int opened = 0;
+        //boolean isVariable = false;
+        //for (int i = 0; i < rule.length(); i++) {
+        //    if (rule.charAt(i) == '(') {
+        //        opened++;
+        //        startIndex = i + 1;
+        //        isVariable = true;
+        //    } else if (rule.charAt(i) == ',') {
+        //        if (isVariable) {
+        //            if (rule.charAt(startIndex) >= 96 && rule.charAt(startIndex) <= 122) {
+        //                rule = rule.substring(0, startIndex + 1) + index + rule.substring(startIndex + 1);
+        //                i++;
+        //            }
+        //            isVariable = false;
+        //        }
+        //    } else if (rule.charAt(i) == ')') {
+        //        opened--;
+        //        if (isVariable) {
+        //            int j = startIndex - 1;
+        //            while (j <= i) {
+        //                if (rule.charAt(j) == ',' || rule.charAt(j) == ')') {
+        //                    if (rule.charAt(j) == ')') {
+        //                        isVariable = false;
+        //                    }
+        //                    int varStartIndex = j - 1;
+        //                    while (varStartIndex >= 0) {
+        //                        if (rule.charAt(varStartIndex) == ',' || rule.charAt(varStartIndex) == '(') {
+        //                            break;
+        //                        }
+        //                        varStartIndex--;
+        //                    }
+        //                    if (rule.charAt(varStartIndex + 1) >= 96 && rule.charAt(varStartIndex + 1) <= 122) {
+        //                        rule = rule.substring(0, j) + index + rule.substring(j);
+        //                        j++;
+        //                        i++;
+        //                    }
+        //                }
+        //                j++;
+        //            }
+        //        }
+        //    } else if (rule.charAt(i) == '|') {
+        //        isVariable = false;
+        //    }
+        //}
+        return rule;
     }
 
 
@@ -346,5 +382,9 @@ public class CNFConverter {
         for (String predicate : predicates) {
             kb.addToKbMap(predicate, clause);
         }
+    }
+
+    private boolean isVariable(char var) {
+        return var >= 96 && var <= 122;
     }
 }
