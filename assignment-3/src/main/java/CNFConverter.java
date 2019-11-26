@@ -26,7 +26,7 @@ public class CNFConverter {
             inputSentences.set(i, standardiseParenthesis(inputSentences.get(i)));
             inputSentences.set(i, moveNegationInward(inputSentences.get(i)));
             inputSentences.set(i, distributeOrOverAnd(inputSentences.get(i)));
-            extractClauses(inputSentences.get(i), i);
+            setClauseSet(inputSentences.get(i), i);
         }
         int index = 0;
         for (String clause : kb.getClauseSet()) {
@@ -174,110 +174,33 @@ public class CNFConverter {
         if (sentence.isEmpty()) {
             return sentence;
         }
-        if (sentence.charAt(0) == '(' && sentence.charAt(sentence.length() - 1) == ')') {
-            sentence = sentence.substring(1, sentence.length() - 1);
-        }
         if (sentence.split("&").length == 1) {
             return sentence;
         }
 
         for (int i = 0; i < sentence.length(); i++) {
             if (sentence.charAt(i) == '|') {
-                ArrayList<String> leftPredicates = new ArrayList<>();
-                ArrayList<String> rightPredicates = new ArrayList<>();
-                int leftPredicateIndex, rightPredicateIndex;
-                if (sentence.charAt(i - 1) == ')') {
-                    int left = i - 2;
-                    int nestedBrackets = 1;
-                    while (left >= 0) {
-                        if (sentence.charAt(left) == '(') {
-                            nestedBrackets--;
-                            if (nestedBrackets == 0) {
-                                break;
-                            }
-                        } else if (sentence.charAt(left) == ')') {
-                            nestedBrackets++;
-                        }
-                        left--;
-                    }
-                    leftPredicateIndex = left;
-                    leftPredicates.addAll(
-                            Arrays.asList(distributeOrOverAnd(sentence.substring(left + 1, i - 1)).split("&")));
-                } else {
-                    int left = i - 1;
-                    while (left >= 0) {
-                        if (sentence.charAt(left) == '(') {
-                            break;
-                        }
-                        left--;
-                    }
-                    leftPredicateIndex = left + 1;
-                    leftPredicates.add(sentence.substring(left + 1, i));
-                }
-
-
-                if (sentence.charAt(i + 1) == '(') {
-                    int right = i + 2;
-                    int nestedBrackets = 1;
-                    while (right <= sentence.length() - 1) {
-                        if (sentence.charAt(right) == ')') {
-                            nestedBrackets--;
-                            if (nestedBrackets == 0) {
-                                break;
-                            }
-                        } else if (sentence.charAt(right) == '(') {
-                            nestedBrackets++;
-                        }
-                        right++;
-                    }
-
-                    rightPredicateIndex = right;
-                    rightPredicates.addAll(Arrays.asList(
-                            distributeOrOverAnd(sentence.substring(i + 2, rightPredicateIndex)).split("&")));
-                } else {
-                    int right = i + 1;
-                    while (right < sentence.length()) {
-                        if (sentence.charAt(right) == ')') {
-                            break;
-                        }
-                        right++;
-                    }
-                    rightPredicateIndex = right;
-                    if (right + 1 >= sentence.length()) {
-                        rightPredicateIndex = sentence.length();
-                    }
-                    rightPredicates.add(sentence.substring(i + 1, rightPredicateIndex));
-                }
-
-
-                String leftClause, rightClause;
-                if (leftPredicateIndex == -1) {
+                PredicateInfo left = getLeftPredicates(sentence, i);
+                PredicateInfo right = getRightPredicates(sentence, i);
+                String leftClause = left.getIndex() == -1 ? "" : sentence.substring(0, left.getIndex());
+                String rightClause = right.getIndex() >= sentence.length() ? "" : sentence.substring(right.getIndex());
+                if (leftClause.equals("(")) {
                     leftClause = "";
-                } else {
-                    leftClause = sentence.substring(0, leftPredicateIndex);
                 }
-                if (rightPredicateIndex >= sentence.length()) {
+                if (rightClause.equals(")")) {
                     rightClause = "";
-                } else {
-                    rightClause = sentence.substring(rightPredicateIndex);
                 }
 
-                StringBuilder demorgan = new StringBuilder();
-                for (String leftPredicate : leftPredicates) {
-                    for (String rightPredicate : rightPredicates) {
-                        String newClause = leftPredicate + "|" + rightPredicate;
-                        demorgan.append(newClause).append("&");
+                String result;
+                StringBuilder sb = new StringBuilder();
+                for (String leftPredicate : left.getPredicates()) {
+                    for (String rightPredicate : right.getPredicates()) {
+                        sb.append(leftPredicate).append("|").append(rightPredicate).append("&");
                     }
                 }
-                StringBuilder result = new StringBuilder();
-                String[] splitClauses = demorgan.toString().split("&");
-                for (int j = 0; j < splitClauses.length; j++) {
-                    if (!splitClauses[j].equals("")) {
-                        result.append(splitClauses[j]);
-                        if (j != splitClauses.length - 1) {
-                            result.append("&");
-                        }
-                    }
+                result = sb.toString();
+                if (result.charAt(result.length() - 1) == '&') {
+                    result = result.substring(0, result.length() - 1);
                 }
                 sentence = leftClause + result + rightClause;
                 sentence = standardiseParenthesis(sentence);
@@ -287,7 +210,80 @@ public class CNFConverter {
     }
 
 
-    private void extractClauses(String sentence, int index) {
+    private PredicateInfo getLeftPredicates(String sentence, int i) {
+        ArrayList<String> leftPredicates = new ArrayList<>();
+        int leftPredicateIndex;
+        if (sentence.charAt(i - 1) == ')') {
+            int left = i - 2;
+            int nestedBrackets = 1;
+            while (left >= 0) {
+                if (sentence.charAt(left) == '(') {
+                    nestedBrackets--;
+                    if (nestedBrackets == 0) {
+                        break;
+                    }
+                } else if (sentence.charAt(left) == ')') {
+                    nestedBrackets++;
+                }
+                left--;
+            }
+            leftPredicateIndex = left;
+            leftPredicates.addAll(Arrays.asList(distributeOrOverAnd(sentence.substring(left + 1, i - 1)).split("&")));
+        } else {
+            int left = i - 1;
+            while (left >= 0) {
+                if (sentence.charAt(left) == '(') {
+                    break;
+                }
+                left--;
+            }
+            leftPredicateIndex = left + 1;
+            leftPredicates.add(sentence.substring(left + 1, i));
+        }
+        return new PredicateInfo(leftPredicateIndex, leftPredicates);
+    }
+
+
+    private PredicateInfo getRightPredicates(String sentence, int i) {
+        ArrayList<String> rightPredicates = new ArrayList<>();
+        int rightPredicateIndex;
+        if (sentence.charAt(i + 1) == '(') {
+            int right = i + 2;
+            int nestedBrackets = 1;
+            while (right <= sentence.length() - 1) {
+                if (sentence.charAt(right) == ')') {
+                    nestedBrackets--;
+                    if (nestedBrackets == 0) {
+                        break;
+                    }
+                } else if (sentence.charAt(right) == '(') {
+                    nestedBrackets++;
+                }
+                right++;
+            }
+
+            rightPredicateIndex = right;
+            rightPredicates.addAll(
+                    Arrays.asList(distributeOrOverAnd(sentence.substring(i + 2, rightPredicateIndex)).split("&")));
+        } else {
+            int right = i + 1;
+            while (right < sentence.length()) {
+                if (sentence.charAt(right) == ')') {
+                    break;
+                }
+                right++;
+            }
+            rightPredicateIndex = right;
+            if (right + 1 >= sentence.length()) {
+                rightPredicateIndex = sentence.length();
+            }
+            rightPredicates.add(sentence.substring(i + 1, rightPredicateIndex));
+        }
+        return new PredicateInfo(rightPredicateIndex, rightPredicates);
+    }
+
+
+    private void setClauseSet(String sentence, int index) {
         HashMap<String, String> map = predicateMapList.get(index);
         String[] clauses = sentence.split("&");
         for (String clause : clauses) {
@@ -311,64 +307,16 @@ public class CNFConverter {
     private String standardiseVariables(String rule, int index) {
         for (int i = 0; i < rule.length(); i++) {
             if (rule.charAt(i) == '(') {
-                if (rule.charAt(i+1) >= 96 && rule.charAt(i+1) <= 122) {
-                    rule = rule.substring(0, i + 2) + index + rule.substring(i+2);
+                if (rule.charAt(i + 1) >= 96 && rule.charAt(i + 1) <= 122) {
+                    rule = rule.substring(0, i + 2) + index + rule.substring(i + 2);
                 }
             }
             if (rule.charAt(i) == ',') {
-                if (rule.charAt(i+1) >= 96 && rule.charAt(i+1) <= 122) {
-                    rule = rule.substring(0, i + 2) + index + rule.substring(i+2);
+                if (rule.charAt(i + 1) >= 96 && rule.charAt(i + 1) <= 122) {
+                    rule = rule.substring(0, i + 2) + index + rule.substring(i + 2);
                 }
             }
         }
-
-
-
-        //int startIndex = -1;
-        //int opened = 0;
-        //boolean isVariable = false;
-        //for (int i = 0; i < rule.length(); i++) {
-        //    if (rule.charAt(i) == '(') {
-        //        opened++;
-        //        startIndex = i + 1;
-        //        isVariable = true;
-        //    } else if (rule.charAt(i) == ',') {
-        //        if (isVariable) {
-        //            if (rule.charAt(startIndex) >= 96 && rule.charAt(startIndex) <= 122) {
-        //                rule = rule.substring(0, startIndex + 1) + index + rule.substring(startIndex + 1);
-        //                i++;
-        //            }
-        //            isVariable = false;
-        //        }
-        //    } else if (rule.charAt(i) == ')') {
-        //        opened--;
-        //        if (isVariable) {
-        //            int j = startIndex - 1;
-        //            while (j <= i) {
-        //                if (rule.charAt(j) == ',' || rule.charAt(j) == ')') {
-        //                    if (rule.charAt(j) == ')') {
-        //                        isVariable = false;
-        //                    }
-        //                    int varStartIndex = j - 1;
-        //                    while (varStartIndex >= 0) {
-        //                        if (rule.charAt(varStartIndex) == ',' || rule.charAt(varStartIndex) == '(') {
-        //                            break;
-        //                        }
-        //                        varStartIndex--;
-        //                    }
-        //                    if (rule.charAt(varStartIndex + 1) >= 96 && rule.charAt(varStartIndex + 1) <= 122) {
-        //                        rule = rule.substring(0, j) + index + rule.substring(j);
-        //                        j++;
-        //                        i++;
-        //                    }
-        //                }
-        //                j++;
-        //            }
-        //        }
-        //    } else if (rule.charAt(i) == '|') {
-        //        isVariable = false;
-        //    }
-        //}
         return rule;
     }
 
@@ -382,9 +330,5 @@ public class CNFConverter {
         for (String predicate : predicates) {
             kb.addToKbMap(predicate, clause);
         }
-    }
-
-    private boolean isVariable(char var) {
-        return var >= 96 && var <= 122;
     }
 }

@@ -175,3 +175,20 @@ Mother(x,y) => Parent(x,y)
 Parent(x,y) & Alive(x) => Older(x,y)
 
 TRUE
+
+
+
+OUT OF HOMEWORK SCOPE
+
+1
+~Belongs(Zymba,x) | ~Mountaineer(x) | Skier(x)
+9
+Belongs(Zymba, Tony)
+Belongs(Zymba, Claude)
+Belongs(Zymba, Ellen)
+Belongs(Zymba, x) => Skier(x) | Mountaineer(x) | (Skier(x) & Mountaineer(x))
+Mountaineer(x) => ~Likes(x, Rain)
+Skier(x) => Likes(x, Snow)
+Likes(x, Tony) => ~Likes(Ellen, x)
+~Likes(x, Tony) => Likes(Ellen,x)
+Likes(Tony,Rain) & Likes(Tony, Snow)

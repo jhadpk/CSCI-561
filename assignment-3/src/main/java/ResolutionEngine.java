@@ -13,10 +13,12 @@ import java.util.Set;
 public class ResolutionEngine {
     private final HashMap<String, Set<String>> kbMap;
     private HashMap<String, Set<String>> kbMapCopy;
+    private final Integer threshold;
 
 
-    public ResolutionEngine(HashMap<String, Set<String>> kbMap) {
+    public ResolutionEngine(HashMap<String, Set<String>> kbMap, Integer threshold) {
         this.kbMap = kbMap;
+        this.threshold = threshold;
         kbMapCopy = deepcopy(this.kbMap);
     }
 
@@ -31,7 +33,7 @@ public class ResolutionEngine {
         } else {
             kbMapCopy.put(predicate, value);
         }
-        return resolve(negatedQuery, 5000, false);
+        return resolve(negatedQuery, threshold, false);
     }
 
 
@@ -59,7 +61,8 @@ public class ResolutionEngine {
                             if (clausePredicate.equals(queryPredicate)) {
                                 if (queryArguments.size() == clauseArguments.size()) {
                                     for (int i = 0; i < queryArguments.size(); i++) {
-                                        theta = unify(queryArguments.get(i).trim(), clauseArguments.get(i).trim(), theta);
+                                        theta = unify(queryArguments.get(i).trim(), clauseArguments.get(i).trim(),
+                                                theta);
                                         if (null == theta) {
                                             unified = false;
                                             break;
@@ -119,7 +122,6 @@ public class ResolutionEngine {
 
     private List<String> getArguments(String query) {
         List<String> arguments = new ArrayList<>();
-
         int opened = 0;
         int start = -1;
         for (int i = 0; i < query.length(); i++) {
@@ -130,9 +132,7 @@ public class ResolutionEngine {
                 }
             }
         }
-
         query = query.substring(start + 1, query.length() - 1);
-
         for (String a : query.trim().split(",")) {
             arguments.add(a.trim());
         }
@@ -188,17 +188,6 @@ public class ResolutionEngine {
     }
 
 
-    private Map<String, String> unifyOps(String x, String y, Map<String, String> theta) {
-        if (theta == null) {
-            return null;
-        } else if (x.equals(y)) {
-            return theta;
-        } else {
-            return null;
-        }
-    }
-
-
     private Map<String, String> unifyVar(String var, String x, Map<String, String> theta) {
         if (isCompound(x)) {
             String argument = getArguments(x).get(0);
@@ -217,6 +206,17 @@ public class ResolutionEngine {
         } else {
             theta.put(var, x);
             return theta;
+        }
+    }
+
+
+    private Map<String, String> unifyOps(String x, String y, Map<String, String> theta) {
+        if (theta == null) {
+            return null;
+        } else if (x.equals(y)) {
+            return theta;
+        } else {
+            return null;
         }
     }
 

@@ -25,7 +25,8 @@ public class Controller {
                 new CNFConverter(kb).convertToCnfAndPopulateKb(input.getSentencesInKb());
                 ArrayList<Boolean> results = new ArrayList<>();
                 for (String query : input.getQueries()) {
-                    boolean result = new ResolutionEngine(kb.getKbMap()).resolve(query.trim());
+                    System.out.println(kb.getKbMap());
+                    boolean result = new ResolutionEngine(kb.getKbMap(), 5000).resolve(query.trim());
                     results.add(result);
                     if (result) {
                         kb.getClauseSet().add(query);
