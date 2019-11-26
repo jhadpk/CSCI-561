@@ -31,66 +31,73 @@ public class ResolutionEngine {
         } else {
             kbMapCopy.put(predicate, value);
         }
-        return resolve(negatedQuery, 500, false);
+        return resolve(negatedQuery, 5000, false);
     }
 
 
     public boolean resolve(String query, int threshold, boolean resolved) {
-        threshold--;
-        if (threshold == 0) {
-            return false;
-        }
-        final List<String> queryClauses = getClauses(query);
-        for (String queryClause : queryClauses) {
-            final String queryPredicate = getPredicate(negateQuery(queryClause));
-            final List<String> queryArguments = getArguments(queryClause);
-            final Set<String> matchingKbRules = kbMapCopy.get(queryPredicate);
-            if (null != matchingKbRules) {
-                for (String rule : matchingKbRules) {
-                    String newKnowledge = "";
-                    final List<String> clauses = getClauses(rule);
-                    boolean partialResolved = false;
-                    for (String clause : clauses) {
-                        Map<String, String> theta = new HashMap<>();
-                        final String clausePredicate = getPredicate(clause);
-                        boolean unified = false;
-                        List<String> clauseArguments = getArguments(clause);
-                        if (clausePredicate.equals(queryPredicate)) {
-                            if (queryArguments.size() == clauseArguments.size()) {
-                                for (int i = 0; i < queryArguments.size(); i++) {
-                                    theta = unify(queryArguments.get(i).trim(), clauseArguments.get(i).trim(), theta);
-                                    if (null == theta) {
-                                        unified = false;
-                                        break;
-                                    } else {
-                                        unified = true;
+        try {
+            threshold--;
+            if (threshold == 0) {
+                return false;
+            }
+            final List<String> queryClauses = getClauses(query);
+            for (String queryClause : queryClauses) {
+                final String queryPredicate = getPredicate(negateQuery(queryClause));
+                final List<String> queryArguments = getArguments(queryClause);
+                final Set<String> matchingKbRules = kbMapCopy.get(queryPredicate);
+                if (null != matchingKbRules) {
+                    for (String rule : matchingKbRules) {
+                        String newKnowledge = "";
+                        final List<String> clauses = getClauses(rule);
+                        boolean partialResolved = false;
+                        for (String clause : clauses) {
+                            Map<String, String> theta = new HashMap<>();
+                            final String clausePredicate = getPredicate(clause);
+                            boolean unified = false;
+                            List<String> clauseArguments = getArguments(clause);
+                            if (clausePredicate.equals(queryPredicate)) {
+                                if (queryArguments.size() == clauseArguments.size()) {
+                                    for (int i = 0; i < queryArguments.size(); i++) {
+                                        theta = unify(queryArguments.get(i).trim(), clauseArguments.get(i).trim(), theta);
+                                        if (null == theta) {
+                                            unified = false;
+                                            break;
+                                        } else {
+                                            unified = true;
+                                        }
                                     }
                                 }
                             }
-                        }
-                        if (unified) {
-                            String updatedQuery = updateStatement(queryClauses, queryClause);
-                            String updatedRule = updateStatement(clauses, clause);
-                            for (String var : theta.keySet()) {
-                                updatedQuery = updatedQuery.replaceAll(var, theta.get(var));
-                                updatedRule = updatedRule.replaceAll(var, theta.get(var));
+                            if (unified) {
+                                String updatedQuery = updateStatement(queryClauses, queryClause);
+                                String updatedRule = updateStatement(clauses, clause);
+                                for (String var : theta.keySet()) {
+                                    updatedQuery = updatedQuery.replaceAll(var, theta.get(var));
+                                    updatedRule = updatedRule.replaceAll(var, theta.get(var));
+                                }
+                                newKnowledge = binaryResolve(updatedQuery, updatedRule);
+                                partialResolved = true;
+                                break;
                             }
-                            newKnowledge = binaryResolve(updatedQuery, updatedRule);
-                            partialResolved = true;
-                            break;
                         }
-                    }
-                    if (partialResolved && newKnowledge.isEmpty()) {
-                        return true;
-                    } else if (!newKnowledge.isEmpty()) {
-                        //System.out.println("Resolved : " + query + " with : " + rule);
-                        //System.out.println("Now Resolving : " + newKnowledge);
-                        //System.out.println("\n");
+                        if (partialResolved && newKnowledge.isEmpty()) {
+                            return true;
+                        } else if (!newKnowledge.isEmpty()) {
+                            System.out.println("Resolved : " + query + " with : " + rule);
+                            System.out.println("Now Resolving : " + newKnowledge);
+                            System.out.println("\n");
+                            resolved = resolved || resolve(newKnowledge, threshold, false);
+                            if (resolved) {
+                                return true;
+                            }
 
-                        resolved = resolved || resolve(newKnowledge, threshold, false);
+                        }
                     }
                 }
             }
+        } catch (StackOverflowError e) {
+            return resolved;
         }
         return resolved;
     }

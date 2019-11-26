@@ -32,7 +32,7 @@ public class Controller {
                         kb.addToKbMap(query.split("\\(")[0], query);
                     }
                 }
-                //System.out.println(results);
+                System.out.println(results);
                 writeOutput(results);
             }
         } catch (Exception e) {

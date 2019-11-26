@@ -89,6 +89,24 @@ TRUE
 
 
 1
+Criminal(RealityMan)
+8
+Programmer(x) | Emulator(y) | People(z) | Provide(x,y,z) => Criminal(x)
+Use(f,x) | Runs(x, N64) => Provide(RealityMan, f, x)
+Software(x) | Runs(x,N64) => Emulator(x)
+Programmer(RealityMan)
+People(f)
+Software(U64)
+Use(f, U64)
+Runs(U64,N64)
+
+
+TRUE
+
+
+
+
+1
 Ancestor(Liz,Billy)
 6
 Mother(Liz,Charley)
@@ -121,7 +139,39 @@ TRUE
 
 
 
+1
+S(A)
+4
+~P(w) | Q(w)
+~Q(y) | S(y)
+P(x) | R(x)
+~R(z) | S(z)
+
+TRUE
+
+
+1
+Faster(Bob,Pat)
+6
+Buffalo(x) | Pig(y) => Faster(x,y)
+Pig(y) | Slug(z) => Faster(y,z)
+Faster(x,y) | Faster(y,z) => Faster(x,z)
+Buffalo(Bob)
+Pig(Pat)
+Slug(Steve)
+
+True
 
 
 
 
+
+1
+Older(Lulu, Fifi)
+4
+Mother(Lulu, Fifi)
+Alive(Lulu)
+Mother(x,y) => Parent(x,y)
+Parent(x,y) & Alive(x) => Older(x,y)
+
+TRUE
