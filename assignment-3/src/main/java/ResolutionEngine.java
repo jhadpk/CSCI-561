@@ -80,6 +80,7 @@ public class ResolutionEngine {
                                     updatedRule = updatedRule.replaceAll(var, theta.get(var));
                                 }
                                 newKnowledge = binaryResolve(updatedQuery, updatedRule);
+                                updateKb(newKnowledge);
                                 partialResolved = true;
                                 break;
                             }
@@ -245,6 +246,21 @@ public class ResolutionEngine {
             return query;
         } else {
             return "~" + query;
+        }
+    }
+
+
+    private void updateKb(final String newKnowledge) {
+        for (String c : getClauses(newKnowledge)) {
+            final String p = getPredicate(c);
+            Set<String> kbOldRules = kbMapCopy.get(p);
+            if (null == kbOldRules) {
+                Set<String> rules = new HashSet<>();
+                rules.add(newKnowledge);
+                kbMapCopy.put(p, rules);
+            } else {
+                kbMapCopy.get(p).add(newKnowledge);
+            }
         }
     }
 
