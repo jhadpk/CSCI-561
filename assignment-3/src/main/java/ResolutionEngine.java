@@ -236,7 +236,7 @@ public class ResolutionEngine {
     }
 
 
-    private static String negateQuery(String query) {
+    private String negateQuery(String query) {
         if (query.startsWith("~")) {
             query = query.substring(1);
             if (query.startsWith("(") && query.endsWith(")")) {

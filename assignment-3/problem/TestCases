@@ -46,6 +46,18 @@ FALSE
 
 
 
+
+1
+A(John)
+2
+A(x) => B(x)
+B(x) => A(x)
+
+FALSE
+
+
+
+
 1
 Parent(Art,Jon)
 3
