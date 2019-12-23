@@ -36,6 +36,7 @@ public class BlackPlayer extends PlayerImpl {
                 }
             }
             if (firstPriorityMoves.size() == 0) {
+                //moves with destination cell within camp
                 for (Move move : allSingleMoves) {
                     if (isFarFromCorner(BLACK_CORNER_CELL, cell, move.getDestinationCell())) {
                         secondPriorityMoves.add(move);
@@ -51,17 +52,12 @@ public class BlackPlayer extends PlayerImpl {
                     firstPriorityJumps.add(move);
                 }
             }
-            if (firstPriorityJumps.size() != 0) {
-                allJumpMoves.retainAll(firstPriorityJumps);
-            } else {
+            if (firstPriorityJumps.size() == 0) {
                 //moves with destination cell within camp
                 for (Move move : allJumpMoves) {
                     if (isFarFromCorner(BLACK_CORNER_CELL, cell, move.getDestinationCell())) {
                         secondPriorityJumps.add(move);
                     }
-                }
-                if (secondPriorityJumps.size() != 0) {
-                    allJumpMoves.retainAll(secondPriorityJumps);
                 }
             }
             availableMoves.addAll(firstPriorityMoves);
@@ -84,12 +80,12 @@ public class BlackPlayer extends PlayerImpl {
                 }
             }
         } else {
-            findMovesOutsideCamp(cell, availableMoves);
+            getMovesOutsideCamp(cell, availableMoves);
 
-            //if any move can enter the opposite camp - make the best of that move
-            final ArrayList<Move> bestMovesToEnterOppositionCamp = getOppositionCampEnteringMoves(availableMoves);
-            if (bestMovesToEnterOppositionCamp.size() != 0) {
-                availableMoves.retainAll(bestMovesToEnterOppositionCamp);
+            //if any move is entering the opposite camp - make that move
+            final ArrayList<Move> oppositionCampEnteringMoves = getOppositionCampEnteringMoves(availableMoves);
+            if (oppositionCampEnteringMoves.size() != 0) {
+                availableMoves.retainAll(oppositionCampEnteringMoves);
             }
         }
         return availableMoves;
@@ -98,14 +94,14 @@ public class BlackPlayer extends PlayerImpl {
 
     @Override
     public ArrayList<Move> getOppositionCampEnteringMoves(ArrayList<Move> allAvailableMoves) {
-        final ArrayList<Move> bestMovesToEnterOppositionCamp = new ArrayList<>();
+        final ArrayList<Move> oppositionCampEnteringMoves = new ArrayList<>();
         for (Move move : allAvailableMoves) {
             if (Camp.whiteCamp.contains(
                     move.getDestinationCell().getRow() + "," + move.getDestinationCell().getCol())) {
-                bestMovesToEnterOppositionCamp.add(move);
+                oppositionCampEnteringMoves.add(move);
             }
         }
-        return bestMovesToEnterOppositionCamp;
+        return oppositionCampEnteringMoves;
     }
 
 

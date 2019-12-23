@@ -28,6 +28,10 @@ public class Coordinates {
         return this.col;
     }
 
+    public static Coordinates getTargetCornerCordinatesByPlayer(final PlayerType playerType) {
+        return playerType == PlayerType.WHITE ? new Coordinates(0, 0) : new Coordinates(15, 15);
+    }
+
 
     @Override
     public int hashCode() {

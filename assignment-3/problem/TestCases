@@ -1,0 +1,206 @@
+1
+Take(Alice,NSAIDs)
+2
+Take(x,Warfarin) => ~Take(x,NSAIDs)
+Take(Alice,Warfarin)
+
+False
+
+
+
+
+
+2
+Alert(Bob,NSAIDs)
+Alert(Bob,VitC)
+5
+Take(x,Warfarin) => ~Take(x,NSAIDs)
+HighBP(x) => Alert(x,NSAIDs)
+Take(Bob,Antacids)
+Take(Bob,VitA)
+HighBP(Bob)
+
+TRUE
+FALSE
+
+
+
+3
+Alert(Alice,VitE)
+Alert(Bob,VitE)
+Alert(John,VitE)
+9
+Migraine(x) & HighBP(x) => Take(x,Timolol)
+Take(x,Warfarin) & Take(x,Timolol) => Alert(x,VitE)
+Migraine(Alice)
+Migraine(Bob)
+HighBP(Bob)
+OldAge(John)
+HighBP(John)
+Take(John,Timolol)
+Take(Bob,Warfarin)
+
+FALSE
+TRUE
+FALSE
+
+
+
+
+1
+A(John)
+2
+A(x) => B(x)
+B(x) => A(x)
+
+FALSE
+
+
+
+
+1
+Parent(Art,Jon)
+3
+Father(Art, Jon)
+Father(Bob, Kim)
+Father(x,y) => Parent(x,y)
+
+TRUE
+
+
+
+
+1
+Eats(Jo, Fish)
+3
+~Cat(x)|Likes(x,Fish)
+~Cat(x)|~Likes(x,y)|Eats(x,y)
+Cat(Jo)
+
+TRUE
+
+
+
+
+
+
+1
+Criminal(West)
+8
+~American(x) | ~Weapon(y) | ~Sells(x, y, z) | ~Hostile(z) | Criminal(x)
+~Missile(x) | ~Owns(Nono, x) | Sells(West, x, Nono)
+~Enemy (x, America ) | Hostile (x)
+~Missile(x) | Weapon(x)
+Owns (Nono , M1 )
+Missile (M1 )
+American(West)
+Enemy(Nono,America)
+
+TRUE
+
+
+
+1
+Criminal(RealityMan)
+8
+Programmer(x) | Emulator(y) | People(z) | Provide(x,y,z) => Criminal(x)
+Use(f,x) | Runs(x, N64) => Provide(RealityMan, f, x)
+Software(x) | Runs(x,N64) => Emulator(x)
+Programmer(RealityMan)
+People(f)
+Software(U64)
+Use(f, U64)
+Runs(U64,N64)
+
+
+TRUE
+
+
+
+
+1
+Ancestor(Liz,Billy)
+6
+Mother(Liz,Charley)
+Father(Charley,Billy)
+~Mother(x,y) | Parent(x,y)
+~Father(x,y) | Parent(x,y)
+~Parent(x,y) | Ancestor(x,y)
+~Parent(x,y) | ~Ancestor(y,z) | Ancestor(x,z)
+
+TRUE
+
+
+
+
+
+1
+Kills(Curiosity, Tuna)
+7
+Animal(F(x)) | Loves(G(x), x)
+~Loves(x, F(x)) | Loves(G(x), x)
+~Loves(y,x)|~Animal(z)|~Kills(x,z)
+~Animal(x) | Loves(Jack , x)
+Kills(Jack,Tuna)|Kills(Curiosity,Tuna)
+Cat(Tuna)
+~Cat(x) | Animal(x)
+
+
+TRUE
+
+
+
+
+1
+S(A)
+4
+~P(w) | Q(w)
+~Q(y) | S(y)
+P(x) | R(x)
+~R(z) | S(z)
+
+TRUE
+
+
+1
+Faster(Bob,Pat)
+6
+Buffalo(x) | Pig(y) => Faster(x,y)
+Pig(y) | Slug(z) => Faster(y,z)
+Faster(x,y) | Faster(y,z) => Faster(x,z)
+Buffalo(Bob)
+Pig(Pat)
+Slug(Steve)
+
+True
+
+
+
+
+
+1
+Older(Lulu, Fifi)
+4
+Mother(Lulu, Fifi)
+Alive(Lulu)
+Mother(x,y) => Parent(x,y)
+Parent(x,y) & Alive(x) => Older(x,y)
+
+TRUE
+
+
+
+OUT OF HOMEWORK SCOPE
+
+1
+~Belongs(Zymba,x) | ~Mountaineer(x) | Skier(x)
+9
+Belongs(Zymba, Tony)
+Belongs(Zymba, Claude)
+Belongs(Zymba, Ellen)
+Belongs(Zymba, x) => Skier(x) | Mountaineer(x) | (Skier(x) & Mountaineer(x))
+Mountaineer(x) => ~Likes(x, Rain)
+Skier(x) => Likes(x, Snow)
+Likes(x, Tony) => ~Likes(Ellen, x)
+~Likes(x, Tony) => Likes(Ellen,x)
+Likes(Tony,Rain) & Likes(Tony, Snow)

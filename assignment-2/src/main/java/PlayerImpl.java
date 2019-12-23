@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 
@@ -12,24 +11,13 @@ import java.util.List;
 
 
 public abstract class PlayerImpl implements Player {
-    protected Cell BLACK_CORNER_CELL = new Cell(0, 0);
-    protected Cell WHITE_CORNER_CELL = new Cell(15, 15);
-
-    private final int MOVE_OUT_OF_CAMP = 100;
-    private final int MOVE_INSIDE_CAMP_FAR_FROM_CORNER = 80;
-    private final int MOVE_ENTERS_OPPOSITION_CAMP = 70;
-
-    private final int JUMP_MOVE_AWAY_FROM_CAMP = 50;
-    private final int SINGLE_MOVE_AWAY_FROM_CAMP = 20;
-    private final int JUMP_MOVE = 10;
-    private final int IS_NOT_SURROUNDED_BY_OPPONENTS = 15;
-
+    protected final Cell BLACK_CORNER_CELL = new Cell(0, 0);
+    protected final Cell WHITE_CORNER_CELL = new Cell(15, 15);
 
     private final ArrayList<ArrayList<Cell>> board;
     private final double timeRemainingInMillis;
     private final PlayerType player;
     private final int maxDepth;
-
 
 
     public PlayerImpl(Input input) {
@@ -62,7 +50,7 @@ public abstract class PlayerImpl implements Player {
      *  3. If 1 and 2 are not possible, make any move out of camp.
      */
     protected Move decideNextMove(final ArrayList<Cell> allPlayers) {
-        ArrayList<MoveToPlay> allBestMoves = new ArrayList<>();
+        MoveToPlay nextMove = null;
         ArrayList<Cell> playersInCamp = new ArrayList<>();
         for (Cell cell : allPlayers) {
             if (isInCamp(cell)) {
@@ -76,7 +64,7 @@ public abstract class PlayerImpl implements Player {
             for (Cell cell : playersInCamp) {
                 final ArrayList<Move> availableMoves = getAvailableMoves(cell);
                 if (!availableMoves.isEmpty()) {
-                    movesForCampPlayers.add(getAvailableMoves(cell));
+                    movesForCampPlayers.add(availableMoves);
                 }
             }
         }
@@ -93,75 +81,72 @@ public abstract class PlayerImpl implements Player {
             }
             //If any move going out of camp exists, execute that
             if (movesGoingOutOfCamp.size() != 0) {
-                if (movesGoingOutOfCamp.size() == 1) {
-                    allBestMoves.add(new MoveToPlay(movesGoingOutOfCamp.get(0)));
-                } else {
-                    allBestMoves.add(iterativeDeepeningAlphaBeta(movesGoingOutOfCamp));
-                    //allBestMoves.add(executeMinMax(0, movesGoingOutOfCamp, null, true, 0, 0));
-                }
+                nextMove = iterativeDeepeningSearch(movesGoingOutOfCamp);
             } else {
                 //Since no move is going out of camp, execute move going farther away (we have only found moves which
                 // are either going out of camp or moving father away, hence only moving away moves are present)
-                for (ArrayList<Move> possibleMove : movesForCampPlayers) {
-                    if (possibleMove.size() != 0) {
-                        if (possibleMove.size() == 1) {
-                            allBestMoves.add(new MoveToPlay(possibleMove.get(0)));
-                        } else {
-                            allBestMoves.add(iterativeDeepeningAlphaBeta(possibleMove));
-                            //allBestMoves.add(executeMinMax(0, possibleMove, null, true, 0, 0));
-                        }
-                    }
+                ArrayList<Move> movesInsideCamp = new ArrayList<>();
+                for (ArrayList<Move> possibleMoves : movesForCampPlayers) {
+                    movesInsideCamp.addAll(possibleMoves);
+                }
+                if (movesInsideCamp.size() != 0) {
+                    nextMove = iterativeDeepeningSearch(movesInsideCamp);
                 }
             }
         } else {
             //No moves available for players in camp. Check only for players outside of camp.
             allPlayers.removeAll(playersInCamp);
+            ArrayList<ArrayList<Move>> allPlayersMoves = new ArrayList<>();
             for (Cell cell : allPlayers) {
-                ArrayList<Move> possibleMoves = getAvailableMoves(cell);
-                if (possibleMoves.size() != 0) {
-                    if (possibleMoves.size() == 1) {
-                        allBestMoves.add(new MoveToPlay(possibleMoves.get(0)));
-                    } else {
-                        allBestMoves.add(iterativeDeepeningAlphaBeta(possibleMoves));
-                        //allBestMoves.add(executeMinMax(0, possibleMoves, null, true, 0, 0));
-                    }
-                }
+                allPlayersMoves.add(getAvailableMoves(cell));
+            }
+            ArrayList<Move> movesOutsideCamp = new ArrayList<>();
+            for (ArrayList<Move> moves : allPlayersMoves) {
+                movesOutsideCamp.addAll(moves);
+            }
+
+            if (movesOutsideCamp.size() != 0) {
+                nextMove = iterativeDeepeningSearch(movesOutsideCamp);
             }
         }
-
-        //remove moves with null move
-
-        allBestMoves.sort(Comparator.comparing(MoveToPlay::getHeuristic).reversed());
-        return allBestMoves.size() != 0 ? allBestMoves.get(0).getMove() : null;
+        return nextMove != null ? nextMove.getMove() : null;
     }
 
 
-    protected void findMovesOutsideCamp(final Cell cell, final ArrayList<Move> availableMoves) {
-        if (isValidMove(cell.getLeft())) {
+    protected void getMovesOutsideCamp(final Cell cell, final ArrayList<Move> availableMoves) {
+        if (isValidMoveForCellOutsideCamp(cell.getLeft())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getLeft(), availableMoves);
         }
-        if (isValidMove(cell.getRight())) {
+        if (isValidMoveForCellOutsideCamp(cell.getRight())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getRight(), availableMoves);
         }
-        if (isValidMove(cell.getTop())) {
+        if (isValidMoveForCellOutsideCamp(cell.getTop())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getTop(), availableMoves);
         }
-        if (isValidMove(cell.getBottom())) {
+        if (isValidMoveForCellOutsideCamp(cell.getBottom())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getBottom(), availableMoves);
         }
-        if (isValidMove(cell.getTopLeft())) {
+        if (isValidMoveForCellOutsideCamp(cell.getTopLeft())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getTopLeft(), availableMoves);
         }
-        if (isValidMove(cell.getTopRight())) {
+        if (isValidMoveForCellOutsideCamp(cell.getTopRight())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getTopRight(), availableMoves);
         }
-        if (isValidMove(cell.getBottomLeft())) {
+        if (isValidMoveForCellOutsideCamp(cell.getBottomLeft())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getBottomLeft(), availableMoves);
         }
-        if (isValidMove(cell.getBottomRight())) {
+        if (isValidMoveForCellOutsideCamp(cell.getBottomRight())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getBottomRight(), availableMoves);
         }
         availableMoves.addAll(getJumpMoves(cell));
+    }
+
+
+    /***
+     * Should not move back to camp, and no player should be occupying the cell.
+     */
+    public boolean isValidMoveForCellOutsideCamp(final Cell destination) {
+        return isNotNull(destination) && !isInCamp(destination) && destination.getPlayerType() == PlayerType.NONE;
     }
 
 
@@ -172,38 +157,45 @@ public abstract class PlayerImpl implements Player {
     }
 
 
+    public Move getMove(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell,
+            Cell destinationCell) {
+        return new Move(playerType, moveType, path, startingCell, destinationCell);
+    }
+
+
     public ArrayList<Move> getSingleMoves(final Cell cell) {
         ArrayList<Move> availableMoves = new ArrayList<>();
-        if (isCellAvailable(cell.getLeft())) {
+        if (isValidMoveForCellInCamp(cell, cell.getLeft())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getLeft(), availableMoves);
         }
-        if (isCellAvailable(cell.getRight())) {
+        if (isValidMoveForCellInCamp(cell, cell.getRight())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getRight(), availableMoves);
         }
-        if (isCellAvailable(cell.getTop())) {
+        if (isValidMoveForCellInCamp(cell, cell.getTop())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getTop(), availableMoves);
         }
-        if (isCellAvailable(cell.getBottom())) {
+        if (isValidMoveForCellInCamp(cell, cell.getBottom())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getBottom(), availableMoves);
         }
-        if (isCellAvailable(cell.getTopLeft())) {
+        if (isValidMoveForCellInCamp(cell, cell.getTopLeft())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getTopLeft(), availableMoves);
         }
-        if (isCellAvailable(cell.getTopRight())) {
+        if (isValidMoveForCellInCamp(cell, cell.getTopRight())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getTopRight(), availableMoves);
         }
-        if (isCellAvailable(cell.getBottomLeft())) {
+        if (isValidMoveForCellInCamp(cell, cell.getBottomLeft())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getBottomLeft(), availableMoves);
         }
-        if (isCellAvailable(cell.getBottomRight())) {
+        if (isValidMoveForCellInCamp(cell, cell.getBottomRight())) {
             addSingleMove(MoveType.EMPTY, cell, cell.getBottomRight(), availableMoves);
         }
         return availableMoves;
     }
 
 
-    public boolean isCellAvailable(final Cell cell) {
-        return isNotNull(cell) && cell.getPlayerType() == PlayerType.NONE;
+    public boolean isValidMoveForCellInCamp(final Cell startingCell, final Cell destinationCell) {
+        return isNotNull(destinationCell) && destinationCell.getPlayerType() == PlayerType.NONE && !returnsToCamp(
+                startingCell, destinationCell);
     }
 
 
@@ -220,12 +212,6 @@ public abstract class PlayerImpl implements Player {
             }
         }
         return jumpMoves;
-    }
-
-
-    public Move getMove(PlayerType playerType, MoveType moveType, List<Cell> path, Cell startingCell,
-            Cell destinationCell) {
-        return new Move(playerType, moveType, path, startingCell, destinationCell);
     }
 
 
@@ -294,14 +280,6 @@ public abstract class PlayerImpl implements Player {
     }
 
 
-    /***
-     * Should not move back to camp, and no player should be occupying the cell.
-     */
-    public boolean isValidMove(final Cell destination) {
-        return isNotNull(destination) && !isInCamp(destination) && destination.getPlayerType() == PlayerType.NONE;
-    }
-
-
     public boolean isNotNull(Object obj) {
         return null != obj;
     }
@@ -331,9 +309,9 @@ public abstract class PlayerImpl implements Player {
         for (int i = 0; i < parentInfo.length; i++) {
             for (int j = 0; j < parentInfo[i].length; j++) {
                 if (null != parentInfo[i][j]) {
-                    jumpingPaths.add(retracePath(parentInfo, startingCell, Halma
-                                    .getCellByCoordinate(new Coordinates(i, j)),
-                            parentInfo[i][j]));
+                    jumpingPaths.add(
+                            retracePath(parentInfo, startingCell, Halma.getCellByCoordinate(new Coordinates(i, j)),
+                                    parentInfo[i][j]));
                 }
             }
         }
@@ -370,9 +348,9 @@ public abstract class PlayerImpl implements Player {
      */
     public boolean isFarFromCorner(final Cell corner, final Cell startingCell, final Cell destinationCell) {
         if (isInCamp(startingCell) && isInCamp(destinationCell)) {
-            return Math.abs(destinationCell.getCol() - corner.getCol()) > Math.abs(
+            return Math.abs(destinationCell.getCol() - corner.getCol()) >= Math.abs(
                     startingCell.getCol() - corner.getCol()) && Math.abs(destinationCell.getRow() - corner.getRow())
-                    > Math.abs(startingCell.getRow() - corner.getRow());
+                    >= Math.abs(startingCell.getRow() - corner.getRow());
         }
         return true;
     }
@@ -388,88 +366,38 @@ public abstract class PlayerImpl implements Player {
     }
 
 
-    public MoveToPlay iterativeDeepeningAlphaBeta(ArrayList<Move> moves) {
+    public MoveToPlay iterativeDeepeningSearch(ArrayList<Move> moves) {
         MoveToPlay bestMove = new MoveToPlay();
-        for (int depth = 1; depth <= maxDepth; depth++) {
-            if (System.currentTimeMillis() - homework.START_TIME >= timeRemainingInMillis) {
-                try {
-                    throw new AgentTimeoutException();
-                } catch (AgentTimeoutException e) {
-                    return bestMove;
+        try {
+            for (int depth = 1; depth <= maxDepth; depth++) {
+                MoveToPlay nextMove = alphaBetaSearch(depth, moves);
+                if (nextMove.getHeuristic() > bestMove.getHeuristic()) {
+                    bestMove = nextMove;
                 }
             }
-            MoveToPlay nextMove = alphaBetaSearch(depth, moves);
-            if (nextMove.getHeuristic() > bestMove.getHeuristic()) {
-                bestMove = nextMove;
-            }
+        } catch (AgentTimeoutException e) {
+            return bestMove;
         }
-        //bestMove = alphaBetaSearch(maxDepth, moves);
         return bestMove;
     }
 
 
     /***
-     * Minimax algorithm with alpha beta pruning and using ierative deepening for search.
-     * If time taken exceeds time remaining, abruptly returning the best move as per heuristic.
+     * Minimax with alphabeta pruning.
+     * Searches for a given depth
      */
-    public MoveToPlay executeMinMax(int depth, ArrayList<Move> moves, Move play, boolean maximizing, int alpha,
-            int beta) {
-        if (depth <= 0 || isGameOver(player) || moves.isEmpty()) {
-            if (null != play && null != play.getDestinationCell()) {
-                return new MoveToPlay(play);
-            }
-        }
-        moves.sort(Comparator.comparing(Move::getHeuristic).reversed());
-        MoveToPlay bestMove = new MoveToPlay();
-        MoveToPlay nextMove;
-        if (maximizing) {
-            int bestScore = Integer.MIN_VALUE;
-            for (Move move : moves) {
-                Halma.makeMove(move);
-                nextMove = executeMinMax(depth - 1, getAvailableMoves(move.getDestinationCell()), move, false, alpha,
-                        beta);
-                Halma.undoMove(move);
-                if (nextMove.getHeuristic() > bestScore) {
-                    bestScore = nextMove.getHeuristic();
-                    bestMove = new MoveToPlay(move, bestScore);
-                }
-                if (bestScore >= beta) {
-                    return new MoveToPlay(move, bestScore);
-                }
-                alpha = Integer.max(alpha, bestScore);
-            }
-            return bestMove;
-        } else {
-            int bestScore = Integer.MAX_VALUE;
-            for (Move move : moves) {
-                Halma.makeMove(move);
-                nextMove = executeMinMax(depth - 1, getAvailableMoves(move.getDestinationCell()), move, true, alpha,
-                        beta);
-                Halma.undoMove(move);
-                if (nextMove.getHeuristic() < bestScore) {
-                    bestScore = nextMove.getHeuristic();
-                    bestMove = new MoveToPlay(move, bestScore);
-                }
-                if (bestScore <= alpha) {
-                    return new MoveToPlay(move, bestScore);
-                }
-                beta = Math.min(beta, bestScore);
-            }
-            return bestMove;
-        }
-    }
-
-
-    private MoveToPlay alphaBetaSearch(int depth, ArrayList<Move> moves) {
+    private MoveToPlay alphaBetaSearch(int depth, ArrayList<Move> moves) throws AgentTimeoutException {
         int alpha = Integer.MIN_VALUE;
         int beta = Integer.MAX_VALUE;
         int currentValue;
         MoveToPlay bestMove = new MoveToPlay();
-        //moves.sort(Comparator.comparing(Move::getHeuristic).reversed());
         for (Move move : moves) {
+            if (System.currentTimeMillis() - homework.START_TIME >= timeRemainingInMillis) {
+                throw new AgentTimeoutException();
+            }
             Halma.makeMove(move);
-            currentValue = maximizer(depth, move, alpha, beta);
-            if (currentValue > alpha) {
+            currentValue = maximizer(depth, move, alpha, beta, depth);
+            if (currentValue > alpha || (currentValue == alpha && isInOpposingCamp(move.getDestinationCell()))) {
                 alpha = currentValue;
                 bestMove = new MoveToPlay(move, currentValue);
             }
@@ -479,17 +407,26 @@ public abstract class PlayerImpl implements Player {
     }
 
 
-    private int maximizer(int depth, Move move, int alpha, int beta) {
+    private int maximizer(int depth, Move move, int alpha, int beta, final int maxDepth) throws AgentTimeoutException {
         final ArrayList<Move> availableMoves = getAvailableMoves(move.getDestinationCell());
-        if (depth == 0 || isGameOver(player) || availableMoves.size() == 0) {
+        if (depth == 1 || isGameOver(player) || availableMoves.size() == 0) {
             if (null != move.getDestinationCell()) {
-                return MoveToPlay.getHeuristicForMove(move);
+                return Halma.evaluateBoard(move.getPlayerType()) + evaluateMove(move, maxDepth);
             }
+        }
+
+        if (System.currentTimeMillis() - homework.START_TIME >= timeRemainingInMillis) {
+            throw new AgentTimeoutException();
         }
         int v = Integer.MIN_VALUE;
         for (Move play : availableMoves) {
+            if (play.getDestinationCell().getRow() == move.getStartingCell().getRow()
+                    && play.getDestinationCell().getCol() == move.getStartingCell().getCol()) {
+                //not allowing reverse move
+                continue;
+            }
             Halma.makeMove(play);
-            v = Math.max(v, minimizer(depth - 1, play, alpha, beta));
+            v = Math.max(v, minimizer(depth - 1, play, alpha, beta, maxDepth));
             Halma.undoMove(play);
             if (v >= beta) { return v; }
             alpha = Math.max(alpha, v);
@@ -498,17 +435,26 @@ public abstract class PlayerImpl implements Player {
     }
 
 
-    private int minimizer(int depth, Move move, int alpha, int beta) {
+    private int minimizer(int depth, Move move, int alpha, int beta, final int maxDepth) throws AgentTimeoutException {
         final ArrayList<Move> availableMoves = getAvailableMoves(move.getDestinationCell());
-        if (depth == 0 || isGameOver(player) || availableMoves.size() == 0) {
+        if (depth == 1 || isGameOver(player) || availableMoves.size() == 0) {
             if (null != move.getDestinationCell()) {
-                return MoveToPlay.getHeuristicForMove(move);
+                return Halma.evaluateBoard(move.getPlayerType()) + evaluateMove(move, maxDepth);
             }
+        }
+
+        if (System.currentTimeMillis() - homework.START_TIME >= timeRemainingInMillis) {
+            throw new AgentTimeoutException();
         }
         int v = Integer.MAX_VALUE;
         for (Move play : availableMoves) {
+            if (play.getDestinationCell().getRow() == move.getStartingCell().getRow()
+                    && play.getDestinationCell().getCol() == move.getStartingCell().getCol()) {
+                //not allowing reverse move
+                continue;
+            }
             Halma.makeMove(play);
-            v = Math.min(v, maximizer(depth - 1, play, alpha, beta));
+            v = Math.min(v, maximizer(depth - 1, play, alpha, beta, maxDepth));
             Halma.undoMove(play);
             if (v <= alpha) { return v; }
             beta = Math.min(beta, v);
@@ -577,11 +523,53 @@ public abstract class PlayerImpl implements Player {
     }
 
 
-    private int evaluate(final Move move) {
+    private int getManhattenDistance(final Cell cell1, final Cell cell2) {
+        return Math.abs(cell1.getRow() - cell2.getRow()) + Math.abs(cell1.getCol() - cell2.getCol());
+    }
+
+
+    /***
+     * Heuristic values :
+     * 10 - moving closer to the opposition camp
+     * 20 - moving into opposition camp from outside
+     */
+    private int evaluateMove(final Move move, final int depth) {
         int heuristic = 0;
+        Cell startingCell = move.getStartingCell();
+        Cell destinationCell = move.getDestinationCell();
 
-        if (isInCamp(move.getStartingCell()) && !isInCamp(move.getDestinationCell())) { heuristic = heuristic + 10; }
+        if (move.getPlayerType() == PlayerType.WHITE) {
+            if (startingCell.getRow() > destinationCell.getRow()) {
+                heuristic += HeuristicValues.VERTICAL_MOVE_BONUS;
+                if (startingCell.getCol() > destinationCell.getCol()) {
+                    heuristic += HeuristicValues.DIAGONAL_MOVE_BONUS;
+                }
+            }
+        } else if (move.getPlayerType() == PlayerType.BLACK) {
+            if (startingCell.getRow() < destinationCell.getRow()) {
+                heuristic += HeuristicValues.VERTICAL_MOVE_BONUS;
+                if (startingCell.getCol() < destinationCell.getCol()) {
+                    heuristic += HeuristicValues.DIAGONAL_MOVE_BONUS;
+                }
+            }
+        }
 
-        return heuristic;
+        ArrayList<Cell> availablePositions = Camp.getAvailablePositionsInOpposition(move.getPlayerType());
+        for (Cell availableCell : availablePositions) {
+            if (getManhattenDistance(availableCell, startingCell) > getManhattenDistance(availableCell,
+                    destinationCell)) {
+                heuristic += HeuristicValues.MOVING_CLOSER_TO_EMPTY_OPPOSITION_CELL;
+                break;
+            }
+        }
+
+        if (isInOpposingCamp(startingCell) && isInOpposingCamp(destinationCell)) {
+            heuristic += HeuristicValues.MOVING_INSIDE_OPPOSITION_CAMP;
+        }
+        if (!isInOpposingCamp(startingCell) && isInOpposingCamp(destinationCell)) {
+            heuristic += HeuristicValues.MOVING_INTO_OPPOSITION_CAMP_FROM_OUTSIDE;
+        }
+
+        return heuristic / depth;
     }
 }

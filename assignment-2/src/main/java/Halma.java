@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 /**
@@ -155,16 +156,15 @@ public class Halma {
         }
     }
 
-
-    /***
-     * Improve the complexity
-     */
-    public static int calculateBoardSituation(final PlayerType playerType) {
+    public static int evaluateBoard(final PlayerType playerType) {
         int heuristic = 0;
+        Coordinates targetCorner = Coordinates.getTargetCornerCordinatesByPlayer(playerType);
+        List<String> oppositeCamp = Camp.getOpposingCampCoordinates(playerType);
+
         for (ArrayList<Cell> row : board) {
             for (Cell tile : row) {
                 if (tile.getPlayerType() == playerType) {
-                    heuristic = heuristic + calculateDistanceFromCorner(playerType, tile);
+                    heuristic = heuristic + evaluateCell(oppositeCamp, targetCorner, tile);
                 }
             }
         }
@@ -172,8 +172,16 @@ public class Halma {
     }
 
 
-    private static int calculateDistanceFromCorner(final PlayerType playerType, final Cell cell) {
-        final Coordinates goal = playerType == PlayerType.WHITE ? new Coordinates(0, 0) : new Coordinates(15, 15);
-        return 100 - (Math.abs(cell.getRow() - goal.getRow()) + Math.abs(cell.getCol() - goal.getCol()));
+    private static int evaluateCell(List<String> oppositionCamp, final Coordinates targetCorner, final Cell cell) {
+        int heuristic = 0;
+        if (oppositionCamp.contains(cell.getRow() + "," + cell.getCol())) {
+            heuristic += HeuristicValues.CELL_IN_OPPOSITION_CAMP_BONUS;
+        }
+        if (Camp.diagonalPath.contains((cell.getRow() + "," + cell.getCol()))) {
+            heuristic += HeuristicValues.CELL_IN_DIAGONAL_PATH_BONUS;
+        }
+        heuristic += (30 - (Math.abs(cell.getRow() - targetCorner.getRow()) + Math.abs(
+                cell.getCol() - targetCorner.getCol()))) * 5;
+        return heuristic;
     }
 }

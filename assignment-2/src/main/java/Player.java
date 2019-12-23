@@ -17,14 +17,6 @@ public interface Player {
      *      outside of their camp).
      *      • If that’s not possible, move a piece in their camp further away from the corner of their
      *      own camp ([0,0] or [15,15] respectively).
-     *
-     *
-     * If player is in camp or is in opposition camp, then only moves allowed :
-     *      Single Move : right, bottom, bottomRight
-     *      Jump Move :
-     *          If in camp -> destinationCell should be farther from corner than startingCell
-     *          If in opposition camp -> destinationCell should be closer to corner than startingCell
-     * Else find all possible moves allowed.
      */
     ArrayList<Move> getAvailableMoves(Cell cell);
 
