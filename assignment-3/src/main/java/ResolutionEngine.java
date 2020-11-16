@@ -88,9 +88,6 @@ public class ResolutionEngine {
                         if (partialResolved && newKnowledge.isEmpty()) {
                             return true;
                         } else if (!newKnowledge.isEmpty()) {
-                            System.out.println("Resolved : " + query + " with : " + rule);
-                            System.out.println("Now Resolving : " + newKnowledge);
-                            System.out.println("\n");
                             resolved = resolved || resolve(newKnowledge, threshold, false);
                             if (resolved) {
                                 return true;
