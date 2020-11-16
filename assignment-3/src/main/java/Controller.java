@@ -14,6 +14,7 @@ public class Controller {
     private static final String OUTPUT_FILE = "/Users/deepakjha/output.txt";
     private static final String NEW_LINE = "\n";
     private static final String NO_OUTPUT = "";
+    private static final int THRESHOLD = 50000;
 
     private KnowledgeBase kb = new KnowledgeBase();
 
@@ -25,14 +26,13 @@ public class Controller {
                 new CNFConverter(kb).convertToCnfAndPopulateKb(input.getSentencesInKb());
                 ArrayList<Boolean> results = new ArrayList<>();
                 for (String query : input.getQueries()) {
-                    boolean result = new ResolutionEngine(kb.getKbMap(), 5000).resolve(query.trim());
+                    boolean result = new ResolutionEngine(kb.getKbMap(), THRESHOLD).resolve(query.trim());
                     results.add(result);
                     if (result) {
                         kb.getClauseSet().add(query);
                         kb.addToKbMap(query.split("\\(")[0], query);
                     }
                 }
-                System.out.println(results);
                 writeOutput(results);
             }
         } catch (Exception e) {
@@ -63,6 +63,7 @@ public class Controller {
         FileWriter fw = null;
         try {
             fw = new FileWriter(OUTPUT_FILE, false);
+            System.out.println(results);
             if (results.size() != 0) {
                 StringBuilder output = new StringBuilder();
                 for (Boolean result : results) {
